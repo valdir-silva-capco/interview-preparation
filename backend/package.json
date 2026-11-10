@@ -1,0 +1,47 @@
+{
+  "name": "interview-preparation-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "build": "nest build",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "lint": "oxlint src/",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:prod": "node dist/main.js",
+    "migration:run": "typeorm migration:run -d dist/database/data-source.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@nestjs/common": "^12.4.0",
+    "@nestjs/config": "^12.1.1",
+    "@nestjs/core": "^12.4.0",
+    "@nestjs/platform-express": "^12.4.0",
+    "@nestjs/swagger": "^12.1.1",
+    "@nestjs/throttler": "^6.7.1",
+    "@nestjs/typeorm": "^12.0.3",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1",
+    "dotenv": "^18.0.9",
+    "helmet": "^8.3.0",
+    "pg": "^8.23.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "typeorm": "^1.1.2"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^12.0.12",
+    "@nestjs/schematics": "^12.0.13",
+    "@nestjs/testing": "^12.4.0",
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.19.2",
+    "oxlint": "^1.91.0",
+    "prettier": "^3.9.10",
+    "tslib": "^2.9.1",
+    "typescript": "^6.0.2"
+  }
+}
