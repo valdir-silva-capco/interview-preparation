@@ -34,7 +34,6 @@ export function AccountPage() {
           <input
             required
             type="password"
-            autoComplete="current-password"
             className="field"
             value={currentPassword}
             onChange={(event) => setCurrentPassword(event.target.value)}
@@ -46,7 +45,6 @@ export function AccountPage() {
             required
             minLength={8}
             type="password"
-            autoComplete="new-password"
             className="field"
             value={newPassword}
             onChange={(event) => setNewPassword(event.target.value)}

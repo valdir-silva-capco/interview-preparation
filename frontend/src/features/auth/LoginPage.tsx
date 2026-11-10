@@ -35,7 +35,6 @@ export function LoginPage() {
             required
             autoFocus
             type="email"
-            autoComplete="username"
             maxLength={320}
             className="field"
             value={email}
@@ -47,7 +46,6 @@ export function LoginPage() {
           <input
             required
             type="password"
-            autoComplete="current-password"
             maxLength={200}
             className="field"
             value={password}
