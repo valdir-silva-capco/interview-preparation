@@ -29,7 +29,7 @@ After the API and database are ready, provision the initial root account:
 docker compose exec api npm run auth:create-root
 ```
 
-The setup prompts for a name and a password (at least 12 characters). The
+The setup prompts for a name and a password (at least 8 characters). The
 initial root email defaults to `valdir.silva@capco.com` and can be changed with
 `ROOT_EMAIL`. Do not use the example secret in a running environment.
 

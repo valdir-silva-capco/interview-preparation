@@ -208,11 +208,11 @@ export function UsersPage() {
         </label>
         {!editingUser && (
           <label className="grid gap-2 text-sm text-slate-200">
-            Initial password (at least 12 characters)
+            Initial password (at least 8 characters)
             <input
               required
               type="password"
-              minLength={12}
+              minLength={8}
               maxLength={200}
               className="field"
               value={password}
@@ -305,7 +305,7 @@ export function UsersPage() {
             disabled={
               saveMutation.isPending ||
               companyIds.length === 0 ||
-              (!editingUser && password.length < 12)
+              (!editingUser && password.length < 8)
             }
           >
             {saveMutation.isPending ? 'Saving…' : 'Save user'}

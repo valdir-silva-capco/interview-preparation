@@ -55,13 +55,13 @@ async function bootstrapRoot(): Promise<void> {
 
     process.stdout.write(`Creating the initial root account for ${email}.\n`);
     const name = (await readLine('Name: ')).trim();
-    const password = await readLine('Password (12+ characters): ', true);
+    const password = await readLine('Password (8+ characters): ', true);
     const confirmation = await readLine('Confirm password: ', true);
     if (name.length < 1 || name.length > 120) {
       throw new Error('Name must contain 1 to 120 characters.');
     }
-    if (password.length < 12 || password.length > 200) {
-      throw new Error('Password must contain 12 to 200 characters.');
+    if (password.length < 8 || password.length > 200) {
+      throw new Error('Password must contain 8 to 200 characters.');
     }
     if (password !== confirmation) {
       throw new Error('Passwords do not match.');

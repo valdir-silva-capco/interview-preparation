@@ -41,10 +41,10 @@ export function AccountPage() {
           />
         </label>
         <label className="grid gap-2 text-sm text-slate-200">
-          New password (at least 12 characters)
+          New password (at least 8 characters)
           <input
             required
-            minLength={12}
+            minLength={8}
             type="password"
             autoComplete="new-password"
             className="field"

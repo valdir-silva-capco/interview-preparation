@@ -88,9 +88,9 @@ export class AuthService {
     currentPassword: string,
     newPassword: string,
   ): Promise<void> {
-    if (newPassword.length < 12) {
+    if (newPassword.length < 8) {
       throw new BadRequestException(
-        'The new password must be at least 12 characters long.',
+        'The new password must be at least 8 characters long.',
       );
     }
     const user = await this.usersRepository
