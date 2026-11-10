@@ -14,6 +14,7 @@
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main.js",
     "migration:run": "typeorm migration:run -d dist/database/data-source.js",
+    "auth:create-root": "node dist/auth/bootstrap-root.js",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -7,6 +7,10 @@ import { CodeExecutionModule } from './code-execution/code-execution.module.js';
 import { CompaniesModule } from './companies/companies.module.js';
 import { HealthModule } from './health/health.module.js';
 import { QuestionsModule } from './questions/questions.module.js';
+import { AuthModule } from './auth/auth.module.js';
+import { AuthGuard } from './auth/auth.guard.js';
+import { UsersModule } from './users/users.module.js';
+import { SpecialtiesModule } from './specialties/specialties.module.js';
 
 @Module({
   imports: [
@@ -32,7 +36,13 @@ import { QuestionsModule } from './questions/questions.module.js';
     QuestionsModule,
     CodeExecutionModule,
     HealthModule,
+    AuthModule,
+    UsersModule,
+    SpecialtiesModule,
   ],
-  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
+  providers: [
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useExisting: AuthGuard },
+  ],
 })
 export class AppModule {}

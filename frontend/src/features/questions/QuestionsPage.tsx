@@ -10,6 +10,7 @@ import {
 } from './questions-api';
 import { CompanyGate } from '../companies/CompanyGate';
 import { useCompanyContext } from '../companies/CompanyContext';
+import { useAuthStore } from '../auth/auth-store';
 
 const MAX_FAVORITE_QUESTIONS = 10;
 
@@ -23,6 +24,7 @@ export function QuestionsPage() {
 
 function CompanyQuestionsPage({ companyId }: { companyId: string }) {
   const { company } = useCompanyContext();
+  const user = useAuthStore((state) => state.user);
   const questionListRef = useRef<HTMLUListElement>(null);
   const questionPickerRef = useRef<HTMLDetailsElement>(null);
   const questionToScrollRef = useRef<string | null>(null);
@@ -239,16 +241,16 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
           Não foi possível excluir a pergunta: {deleteMutation.error.message}
         </p>
       )}
-      {favoriteMutation.isError && (
+      {user && user.role !== 'user' && favoriteMutation.isError && (
         <p role="alert" className="panel text-red-200">
           Não foi possível atualizar os favoritos:{' '}
           {favoriteMutation.error.message}
         </p>
       )}
-      {questionsQuery.data && questionsQuery.data.length > 0 && (
+      {user && user.role !== 'user' && questionsQuery.data && (
         <p className="text-sm text-slate-400">
-          Favoritas: {favoriteCount}/{MAX_FAVORITE_QUESTIONS} — elas aparecem no
-          topo da lista.
+          Favorites: {favoriteCount}/{MAX_FAVORITE_QUESTIONS} — they stay at the
+          top of the list.
         </p>
       )}
       {questionsQuery.data?.length === 0 && (
@@ -278,42 +280,44 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
                   {getQuestionTitle(question.prompt)}
                 </h2>
                 <div className="flex flex-wrap gap-2">
-                  <button
-                    className={
-                      question.isFavorite
-                        ? 'button-secondary border-amber-400/50 text-amber-200'
-                        : 'button-secondary'
-                    }
-                    type="button"
-                    aria-pressed={question.isFavorite}
-                    aria-label={
-                      question.isFavorite
-                        ? 'Remover dos favoritos'
-                        : 'Adicionar aos favoritos'
-                    }
-                    title={
-                      !question.isFavorite &&
-                      favoriteCount >= MAX_FAVORITE_QUESTIONS
-                        ? `O limite de ${MAX_FAVORITE_QUESTIONS} perguntas favoritas foi atingido`
-                        : undefined
-                    }
-                    disabled={
-                      favoriteMutation.isPending ||
-                      (!question.isFavorite &&
-                        favoriteCount >= MAX_FAVORITE_QUESTIONS)
-                    }
-                    onClick={() =>
-                      favoriteMutation.mutate({
-                        id: question.id,
-                        isFavorite: !question.isFavorite,
-                      })
-                    }
-                  >
-                    <span aria-hidden="true">
-                      {question.isFavorite ? '★' : '☆'}
-                    </span>
-                    {question.isFavorite ? 'Favorita' : 'Favoritar'}
-                  </button>
+                  {user && user.role !== 'user' && (
+                    <button
+                      className={
+                        question.isFavorite
+                          ? 'button-secondary border-amber-400/50 text-amber-200'
+                          : 'button-secondary'
+                      }
+                      type="button"
+                      aria-pressed={question.isFavorite}
+                      aria-label={
+                        question.isFavorite
+                          ? 'Remove favorite'
+                          : 'Add favorite'
+                      }
+                      title={
+                        !question.isFavorite &&
+                        favoriteCount >= MAX_FAVORITE_QUESTIONS
+                          ? `The ${MAX_FAVORITE_QUESTIONS}-favorite limit has been reached`
+                          : undefined
+                      }
+                      disabled={
+                        favoriteMutation.isPending ||
+                        (!question.isFavorite &&
+                          favoriteCount >= MAX_FAVORITE_QUESTIONS)
+                      }
+                      onClick={() =>
+                        favoriteMutation.mutate({
+                          id: question.id,
+                          isFavorite: !question.isFavorite,
+                        })
+                      }
+                    >
+                      <span aria-hidden="true">
+                        {question.isFavorite ? '★' : '☆'}
+                      </span>
+                      {question.isFavorite ? 'Favorite' : 'Add favorite'}
+                    </button>
+                  )}
                   <button
                     className="button-secondary"
                     type="button"
@@ -366,30 +370,36 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
                   )}
                 </div>
                 <div className="flex flex-wrap gap-3 border-t border-slate-800 pt-4">
-                  <Link
-                    className="button-secondary"
-                    to="/questions/$questionId/edit"
-                    params={{ questionId: question.id }}
-                    onClick={() => rememberQuestionPosition(question.id)}
-                  >
-                    Editar
-                  </Link>
-                  <button
-                    className="button-danger"
-                    type="button"
-                    disabled={deleteMutation.isPending}
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          `Excluir a pergunta "${getQuestionTitle(question.prompt)}"?`,
-                        )
-                      ) {
-                        deleteMutation.mutate(question.id);
-                      }
-                    }}
-                  >
-                    Excluir
-                  </button>
+                  {(user?.role === 'root' ||
+                    user?.role === 'master' ||
+                    question.createdById === user?.id) && (
+                    <>
+                      <Link
+                        className="button-secondary"
+                        to="/questions/$questionId/edit"
+                        params={{ questionId: question.id }}
+                        onClick={() => rememberQuestionPosition(question.id)}
+                      >
+                        Editar
+                      </Link>
+                      <button
+                        className="button-danger"
+                        type="button"
+                        disabled={deleteMutation.isPending}
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              `Excluir a pergunta "${getQuestionTitle(question.prompt)}"?`,
+                            )
+                          ) {
+                            deleteMutation.mutate(question.id);
+                          }
+                        }}
+                      >
+                        Excluir
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </li>

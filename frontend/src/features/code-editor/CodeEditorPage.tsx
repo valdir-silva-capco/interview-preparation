@@ -8,6 +8,7 @@ import { useMemo } from 'react';
 import { CompanyGate } from '../companies/CompanyGate';
 import { useCompanyContext } from '../companies/CompanyContext';
 import { useEditorStore } from '../../stores/editor-store';
+import { useAuthStore } from '../auth/auth-store';
 import {
   codeSnippetKeys,
   createCodeSnippet,
@@ -47,6 +48,7 @@ export function CodeEditorPage() {
 
 function CompanyCodeEditor({ companyId }: { companyId: string }) {
   const { company } = useCompanyContext();
+  const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
   const language = useEditorStore(
     (state) => state.drafts[companyId]?.language ?? 'python',
@@ -58,6 +60,9 @@ function CompanyCodeEditor({ companyId }: { companyId: string }) {
   const setSource = useEditorStore((state) => state.setSource);
   const [title, setTitle] = useState('');
   const [activeSnippetId, setActiveSnippetId] = useState<string | null>(null);
+  const [activeSnippetOwnerId, setActiveSnippetOwnerId] = useState<string | null>(
+    null,
+  );
   const [validationError, setValidationError] = useState('');
   const [copied, setCopied] = useState(false);
   const sessionIdRef = useRef(0);
@@ -148,9 +153,14 @@ function CompanyCodeEditor({ companyId }: { companyId: string }) {
     [language],
   );
   const sourceByteLength = new TextEncoder().encode(source).length;
+  const canEditActiveSnippet =
+    user?.role === 'root' ||
+    user?.role === 'master' ||
+    activeSnippetId === null ||
+    activeSnippetOwnerId === user?.id;
 
   function markSnippetSaved(
-    snippet: { id: string; title: string },
+    snippet: { id: string; title: string; createdById: string | null },
     request: SaveCodeRequest,
   ) {
     if (sessionIdRef.current === request.snapshot.sessionId) {
@@ -164,6 +174,7 @@ function CompanyCodeEditor({ companyId }: { companyId: string }) {
         activeSnippetId: snippet.id,
       };
       setActiveSnippetId(snippet.id);
+      setActiveSnippetOwnerId(snippet.createdById);
       if (editorSnapshotRef.current.title.trim() === request.input.title) {
         setTitle(snippet.title);
       }
@@ -181,6 +192,7 @@ function CompanyCodeEditor({ companyId }: { companyId: string }) {
       sessionId: sessionIdRef.current,
     };
     setActiveSnippetId(null);
+    setActiveSnippetOwnerId(null);
     setTitle('');
     setLanguage(companyId, 'python');
     setSource(companyId, '');
@@ -219,6 +231,7 @@ function CompanyCodeEditor({ companyId }: { companyId: string }) {
     title: string;
     language: CodeLanguage;
     source: string;
+    createdById: string | null;
   }) {
     sessionIdRef.current += 1;
     const snapshot: EditorSnapshot = {
@@ -231,6 +244,7 @@ function CompanyCodeEditor({ companyId }: { companyId: string }) {
     editorSnapshotRef.current = snapshot;
     savedSnapshotRef.current = snapshot;
     setActiveSnippetId(snippet.id);
+    setActiveSnippetOwnerId(snippet.createdById);
     setTitle(snippet.title);
     setLanguage(companyId, snippet.language);
     setSource(companyId, snippet.source);
@@ -256,6 +270,7 @@ function CompanyCodeEditor({ companyId }: { companyId: string }) {
 
       if (
         saveInFlightRef.current ||
+        !canEditActiveSnippet ||
         !normalizedTitle ||
         !snapshot.source.trim() ||
         byteLength > 20_000 ||
@@ -277,7 +292,7 @@ function CompanyCodeEditor({ companyId }: { companyId: string }) {
     }, AUTO_SAVE_INTERVAL_MS);
 
     return () => window.clearInterval(intervalId);
-  }, [autoSaveMutation.mutate]);
+  }, [autoSaveMutation.mutate, canEditActiveSnippet]);
 
   return (
     <section className="grid gap-6">
@@ -296,6 +311,7 @@ function CompanyCodeEditor({ companyId }: { companyId: string }) {
             Snippet name
             <input
               className="field"
+              disabled={!canEditActiveSnippet}
               maxLength={120}
               value={title}
               onChange={(event) => {
@@ -311,6 +327,7 @@ function CompanyCodeEditor({ companyId }: { companyId: string }) {
               Language
               <select
                 className="field w-auto"
+                disabled={!canEditActiveSnippet}
                 value={language}
                 onChange={(event) => {
                   const nextLanguage = event.target.value;
@@ -347,14 +364,18 @@ function CompanyCodeEditor({ companyId }: { companyId: string }) {
                     ? 'Copied!'
                     : 'Copy code'}
               </button>
-              <button
-                className="button-secondary"
-                type="button"
-                disabled={saveMutation.isPending || autoSaveMutation.isPending}
-                onClick={saveSnippet}
-              >
-                {saveMutation.isPending ? 'Saving…' : 'Save code'}
-              </button>
+              {canEditActiveSnippet && (
+                <button
+                  className="button-secondary"
+                  type="button"
+                  disabled={
+                    saveMutation.isPending || autoSaveMutation.isPending
+                  }
+                  onClick={saveSnippet}
+                >
+                  {saveMutation.isPending ? 'Saving…' : 'Save code'}
+                </button>
+              )}
               <button
                 className="button-primary"
                 type="button"
@@ -389,6 +410,8 @@ function CompanyCodeEditor({ companyId }: { companyId: string }) {
                 bracketMatching: true,
                 closeBrackets: true,
               }}
+              editable={canEditActiveSnippet}
+              readOnly={!canEditActiveSnippet}
               aria-label={`${language === 'python' ? 'Python' : 'Node.js'} editor`}
             />
           </div>
@@ -523,23 +546,27 @@ function CompanyCodeEditor({ companyId }: { companyId: string }) {
                       {snippet.language === 'python' ? 'Python' : 'Node.js'}
                     </span>
                   </button>
-                  <button
-                    className="button-danger px-2"
-                    type="button"
-                    aria-label={`Delete ${snippet.title}`}
-                    disabled={deleteMutation.isPending}
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          `Delete the code snippet "${snippet.title}"?`,
-                        )
-                      ) {
-                        deleteMutation.mutate(snippet.id);
-                      }
-                    }}
-                  >
-                    Delete
-                  </button>
+                  {(user?.role === 'root' ||
+                    user?.role === 'master' ||
+                    snippet.createdById === user?.id) && (
+                    <button
+                      className="button-danger px-2"
+                      type="button"
+                      aria-label={`Delete ${snippet.title}`}
+                      disabled={deleteMutation.isPending}
+                      onClick={() => {
+                        if (
+                          window.confirm(
+                            `Delete the code snippet "${snippet.title}"?`,
+                          )
+                        ) {
+                          deleteMutation.mutate(snippet.id);
+                        }
+                      }}
+                    >
+                      Delete
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>

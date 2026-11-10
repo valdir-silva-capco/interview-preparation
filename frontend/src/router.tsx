@@ -9,6 +9,10 @@ import { CodeEditorPage } from './features/code-editor/CodeEditorPage';
 import { CreateQuestionPage } from './features/questions/CreateQuestionPage';
 import { EditQuestionPage } from './features/questions/EditQuestionPage';
 import { QuestionsPage } from './features/questions/QuestionsPage';
+import { LoginPage } from './features/auth/LoginPage';
+import { UsersPage } from './features/auth/UsersPage';
+import { SpecialtiesPage } from './features/auth/SpecialtiesPage';
+import { AccountPage } from './features/auth/AccountPage';
 
 const rootRoute = createRootRoute({ component: RootLayout });
 
@@ -37,6 +41,26 @@ const createCompanyRoute = createRoute({
   path: '/companies/new',
   component: CreateCompanyPage,
 });
+const loginRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/login',
+  component: LoginPage,
+});
+const usersRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/users',
+  component: UsersPage,
+});
+const specialtiesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/specialties',
+  component: SpecialtiesPage,
+});
+const accountRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/account',
+  component: AccountPage,
+});
 
 const routeTree = rootRoute.addChildren([
   questionsRoute,
@@ -44,6 +68,10 @@ const routeTree = rootRoute.addChildren([
   editQuestionRoute,
   codeRoute,
   createCompanyRoute,
+  loginRoute,
+  usersRoute,
+  specialtiesRoute,
+  accountRoute,
 ]);
 
 export const router = createRouter({ routeTree });

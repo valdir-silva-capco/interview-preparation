@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import type { Repository } from 'typeorm';
 import type { CreateCompanyDto } from './dto/create-company.dto.js';
 import { Company } from './company.entity.js';
+import type { AuthenticatedUser } from '../auth/auth.types.js';
 
 @Injectable()
 export class CompaniesService {
@@ -15,8 +16,20 @@ export class CompaniesService {
     private readonly companiesRepository: Repository<Company>,
   ) {}
 
-  findAll(): Promise<Company[]> {
-    return this.companiesRepository.find({ order: { name: 'ASC' } });
+  async findAll(actor: AuthenticatedUser): Promise<Company[]> {
+    if (actor.role === 'root') {
+      return this.companiesRepository.find({ order: { name: 'ASC' } });
+    }
+    return this.companiesRepository
+      .createQueryBuilder('company')
+      .innerJoin(
+        'user_companies',
+        'membership',
+        'membership."companyId" = company.id',
+      )
+      .where('membership."userId" = :userId', { userId: actor.id })
+      .orderBy('company.name', 'ASC')
+      .getMany();
   }
 
   async findOne(id: string): Promise<Company> {

@@ -5,6 +5,12 @@ import helmet from 'helmet';
 import { AppModule } from './app.module.js';
 
 async function bootstrap(): Promise<void> {
+  if (
+    !process.env.AUTH_TOKEN_SECRET ||
+    Buffer.byteLength(process.env.AUTH_TOKEN_SECRET) < 32
+  ) {
+    throw new Error('AUTH_TOKEN_SECRET must contain at least 32 bytes.');
+  }
   const app = await NestFactory.create(AppModule);
   app.enableShutdownHooks();
   app.setGlobalPrefix('api/v1');

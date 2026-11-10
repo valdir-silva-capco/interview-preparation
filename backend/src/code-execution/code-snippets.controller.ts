@@ -10,6 +10,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Req,
 } from '@nestjs/common';
 import {
   ApiCreatedResponse,
@@ -22,6 +23,7 @@ import { CodeSnippet } from '../code-snippets/code-snippet.entity.js';
 import { SaveCodeSnippetDto } from '../code-snippets/dto/save-code-snippet.dto.js';
 import { UpdateCodeSnippetDto } from '../code-snippets/dto/update-code-snippet.dto.js';
 import { CodeSnippetsService } from './code-snippets.service.js';
+import type { Request } from 'express';
 
 @ApiTags('code-snippets')
 @Controller('companies/:companyId/code-snippets')
@@ -43,9 +45,10 @@ export class CodeSnippetsController {
   create(
     @Param('companyId', ParseUUIDPipe) companyId: string,
     @Body() dto: SaveCodeSnippetDto,
+    @Req() request: Request,
   ): Promise<CodeSnippet> {
     this.validateSourceSize(dto.source);
-    return this.snippetsService.create(companyId, dto);
+    return this.snippetsService.create(companyId, dto, request.user!);
   }
 
   @Patch(':id')
@@ -55,11 +58,12 @@ export class CodeSnippetsController {
     @Param('companyId', ParseUUIDPipe) companyId: string,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateCodeSnippetDto,
+    @Req() request: Request,
   ): Promise<CodeSnippet> {
     if (dto.source !== undefined) {
       this.validateSourceSize(dto.source);
     }
-    return this.snippetsService.update(companyId, id, dto);
+    return this.snippetsService.update(companyId, id, dto, request.user!);
   }
 
   @Delete(':id')
@@ -69,8 +73,9 @@ export class CodeSnippetsController {
   async remove(
     @Param('companyId', ParseUUIDPipe) companyId: string,
     @Param('id', ParseUUIDPipe) id: string,
+    @Req() request: Request,
   ): Promise<void> {
-    await this.snippetsService.remove(companyId, id);
+    await this.snippetsService.remove(companyId, id, request.user!);
   }
 
   private validateSourceSize(source: string): void {

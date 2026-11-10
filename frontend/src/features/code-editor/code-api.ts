@@ -17,6 +17,7 @@ export interface CodeSnippet {
   title: string;
   language: CodeLanguage;
   source: string;
+  createdById: string | null;
   createdAt: string;
   updatedAt: string;
 }

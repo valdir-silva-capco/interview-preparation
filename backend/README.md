@@ -7,6 +7,18 @@ forwarded to a separate local service over a Unix socket.
 ## Endpoints
 
 - `GET /api/v1/health`
+- `POST /api/v1/auth/login`
+- `GET /api/v1/auth/me`
+- `POST /api/v1/auth/logout`
+- `POST /api/v1/auth/change-password`
+- `GET /api/v1/users`
+- `POST /api/v1/users`
+- `PATCH /api/v1/users/:id`
+- `DELETE /api/v1/users/:id` (deactivates the account)
+- `GET /api/v1/specialties`
+- `POST /api/v1/specialties`
+- `PATCH /api/v1/specialties/:id`
+- `DELETE /api/v1/specialties/:id`
 - `GET /api/v1/companies`
 - `POST /api/v1/companies`
 - `GET /api/v1/companies/:companyId/questions`
@@ -29,11 +41,16 @@ Each company can have up to ten favorite questions, which are returned before
 the others. The migration assigns existing questions to the default company;
 code snippets that previously existed only in memory cannot be recovered.
 
-The company selector does not require login: it provides data organization,
-not authorization. Anyone with access to the application can select any
-registered company. Do not use this configuration for confidential data or
-public exposure without implementing authentication and authorization.
+All endpoints except health and login require a bearer token. Tokens expire
+after 20 hours. Root users have global access; master and user accounts are
+restricted to their linked companies. Masters manage only user accounts;
+users can read company content and edit or delete only their own questions and
+code snippets. User deletion is logical (deactivation).
 
-Start the API, PostgreSQL, and code runner with `docker compose up --build`.
+Set a unique `AUTH_TOKEN_SECRET` of at least 32 bytes in `backend/.env` before
+starting the stack. Start the API, PostgreSQL, and code runner with
+`docker compose up --build`. Once the API is healthy, create the initial root
+account using `docker compose exec api npm run auth:create-root`.
+
 The runner is isolated for local development; the Compose configuration must
 not be used as the only security boundary for public code execution.

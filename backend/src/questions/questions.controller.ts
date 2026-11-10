@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Req,
 } from '@nestjs/common';
 import {
   ApiCreatedResponse,
@@ -22,6 +23,8 @@ import { SetQuestionFavoriteDto } from './dto/set-question-favorite.dto.js';
 import { UpdateQuestionDto } from './dto/update-question.dto.js';
 import { Question } from './question.entity.js';
 import { QuestionsService } from './questions.service.js';
+import type { Request } from 'express';
+import { Roles } from '../auth/auth.decorators.js';
 
 @ApiTags('questions')
 @Controller('companies/:companyId/questions')
@@ -53,8 +56,9 @@ export class QuestionsController {
   create(
     @Param('companyId', ParseUUIDPipe) companyId: string,
     @Body() dto: CreateQuestionDto,
+    @Req() request: Request,
   ): Promise<Question> {
-    return this.questionsService.create(companyId, dto);
+    return this.questionsService.create(companyId, dto, request.user!);
   }
 
   @Patch(':id')
@@ -64,11 +68,13 @@ export class QuestionsController {
     @Param('companyId', ParseUUIDPipe) companyId: string,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateQuestionDto,
+    @Req() request: Request,
   ): Promise<Question> {
-    return this.questionsService.update(companyId, id, dto);
+    return this.questionsService.update(companyId, id, dto, request.user!);
   }
 
   @Patch(':id/favorite')
+  @Roles('root', 'master')
   @ApiOperation({ summary: 'Favoritar ou desfavoritar uma pergunta' })
   @ApiOkResponse({ type: Question })
   setFavorite(
@@ -86,7 +92,8 @@ export class QuestionsController {
   async remove(
     @Param('companyId', ParseUUIDPipe) companyId: string,
     @Param('id', ParseUUIDPipe) id: string,
+    @Req() request: Request,
   ): Promise<void> {
-    await this.questionsService.remove(companyId, id);
+    await this.questionsService.remove(companyId, id, request.user!);
   }
 }

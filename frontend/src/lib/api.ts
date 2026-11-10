@@ -1,3 +1,5 @@
+import { useAuthStore } from '../features/auth/auth-store';
+
 const apiBaseUrl =
   import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api/v1';
 
@@ -6,6 +8,8 @@ export async function apiRequest<T>(
   init?: RequestInit,
 ): Promise<T> {
   const headers = new Headers(init?.headers);
+  const accessToken = useAuthStore.getState().accessToken;
+  if (accessToken) headers.set('authorization', `Bearer ${accessToken}`);
   if (init?.body !== undefined) {
     headers.set('content-type', 'application/json');
   }
@@ -16,6 +20,12 @@ export async function apiRequest<T>(
   });
 
   if (!response.ok) {
+    if (response.status === 401 && accessToken) {
+      useAuthStore.getState().clearSession();
+      if (window.location.pathname !== '/login') {
+        window.location.assign('/login');
+      }
+    }
     const body = await response.text();
     let message = `Request failed (${response.status}).`;
     if (body) {

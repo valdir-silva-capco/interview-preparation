@@ -11,6 +11,7 @@ import type { CreateQuestionDto } from './dto/create-question.dto.js';
 import type { SetQuestionFavoriteDto } from './dto/set-question-favorite.dto.js';
 import type { UpdateQuestionDto } from './dto/update-question.dto.js';
 import { Question } from './question.entity.js';
+import type { AuthenticatedUser } from '../auth/auth.types.js';
 
 const MAX_FAVORITE_QUESTIONS = 10;
 
@@ -42,10 +43,15 @@ export class QuestionsService {
     return question;
   }
 
-  async create(companyId: string, dto: CreateQuestionDto): Promise<Question> {
+  async create(
+    companyId: string,
+    dto: CreateQuestionDto,
+    actor: AuthenticatedUser,
+  ): Promise<Question> {
     await this.companiesService.findOne(companyId);
     const question = this.questionsRepository.create({
       companyId,
+      createdById: actor.id,
       prompt: dto.prompt.trim(),
       answer: dto.answer?.trim() || null,
     });
@@ -56,8 +62,10 @@ export class QuestionsService {
     companyId: string,
     id: string,
     dto: UpdateQuestionDto,
+    actor: AuthenticatedUser,
   ): Promise<Question> {
     const question = await this.findOne(companyId, id);
+    this.assertCanEdit(actor, question.createdById);
     if (dto.prompt !== undefined) {
       question.prompt = dto.prompt.trim();
     }
@@ -106,8 +114,22 @@ export class QuestionsService {
     });
   }
 
-  async remove(companyId: string, id: string): Promise<void> {
+  async remove(
+    companyId: string,
+    id: string,
+    actor: AuthenticatedUser,
+  ): Promise<void> {
     const question = await this.findOne(companyId, id);
+    this.assertCanEdit(actor, question.createdById);
     await this.questionsRepository.remove(question);
+  }
+
+  private assertCanEdit(
+    actor: AuthenticatedUser,
+    createdById: string | null,
+  ): void {
+    if (actor.role !== 'root' && actor.role !== 'master' && createdById !== actor.id) {
+      throw new NotFoundException('Question not found.');
+    }
   }
 }

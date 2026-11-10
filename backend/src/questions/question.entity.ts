@@ -21,6 +21,10 @@ export class Question {
   @Column({ type: 'uuid' })
   companyId!: string;
 
+  @ApiProperty({ format: 'uuid', nullable: true })
+  @Column({ type: 'uuid', nullable: true })
+  createdById!: string | null;
+
   @ApiProperty({ default: false })
   @Column({ type: 'boolean', default: false })
   isFavorite!: boolean;

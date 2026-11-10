@@ -1,17 +1,33 @@
 import { useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Link, Outlet, useRouterState } from '@tanstack/react-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  Link,
+  Outlet,
+  useNavigate,
+  useRouterState,
+} from '@tanstack/react-router';
 import { CompanyProvider } from '../features/companies/CompanyContext';
 import { companyKeys, getCompanies } from '../features/companies/companies-api';
 import { useCompanyStore } from '../features/companies/company-store';
+import { logout } from '../features/auth/auth-api';
+import { LoginPage } from '../features/auth/LoginPage';
+import { useAuthStore } from '../features/auth/auth-store';
 
 export function RootLayout() {
-  const isQuestionsPage = useRouterState({
-    select: (state) => state.location.pathname === '/',
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
   });
+  const isQuestionsPage = pathname === '/';
+  const isLoginPage = pathname === '/login';
+  const user = useAuthStore((state) => state.user);
+  const expiresAt = useAuthStore((state) => state.expiresAt);
+  const clearSession = useAuthStore((state) => state.clearSession);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const companiesQuery = useQuery({
     queryKey: companyKeys.all,
     queryFn: getCompanies,
+    enabled: Boolean(user),
   });
   const selectedCompanyId = useCompanyStore((state) => state.selectedCompanyId);
   const selectCompany = useCompanyStore((state) => state.selectCompany);
@@ -21,10 +37,40 @@ export function RootLayout() {
     null;
 
   useEffect(() => {
+    if (!user && !isLoginPage) {
+      void navigate({ to: '/login', replace: true });
+    } else if (user && isLoginPage) {
+      void navigate({ to: '/', replace: true });
+    }
+  }, [isLoginPage, navigate, user]);
+
+  useEffect(() => {
+    if (!user || !expiresAt) return;
+    const timerId = window.setTimeout(() => {
+      clearSession();
+      queryClient.clear();
+      void navigate({ to: '/login', replace: true });
+    }, Math.max(0, expiresAt - Date.now()));
+    return () => window.clearTimeout(timerId);
+  }, [clearSession, expiresAt, navigate, queryClient, user]);
+
+  useEffect(() => {
     if (company && selectedCompanyId !== company.id) {
       selectCompany(company.id);
     }
   }, [company, selectedCompanyId, selectCompany]);
+
+  async function handleLogout() {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Failed to end the server session:', error);
+    } finally {
+      clearSession();
+      queryClient.clear();
+      await navigate({ to: '/login', replace: true });
+    }
+  }
 
   return (
     <CompanyProvider
@@ -41,15 +87,15 @@ export function RootLayout() {
               Interview Preparation
             </Link>
             <nav
-              aria-label="Navegação principal"
+              aria-label="Main navigation"
               className="flex flex-wrap items-center gap-2"
             >
-              {companiesQuery.data && companiesQuery.data.length > 0 && (
+              {user && companiesQuery.data && companiesQuery.data.length > 0 && (
                 <label className="flex items-center gap-2 text-sm text-slate-300">
-                  Empresa
+                  Company
                   <select
                     className="field w-auto py-2"
-                    aria-label="Empresa selecionada"
+                    aria-label="Selected company"
                     value={company?.id ?? ''}
                     onChange={(event) => selectCompany(event.target.value)}
                   >
@@ -61,27 +107,69 @@ export function RootLayout() {
                   </select>
                 </label>
               )}
-              <Link
-                className="nav-link"
-                activeProps={{ className: 'nav-link nav-link-active' }}
-                to="/companies/new"
-              >
-                Nova empresa
-              </Link>
-              <Link
-                className="nav-link"
-                activeProps={{ className: 'nav-link nav-link-active' }}
-                to="/"
-              >
-                Perguntas
-              </Link>
-              <Link
-                className="nav-link"
-                activeProps={{ className: 'nav-link nav-link-active' }}
-                to="/code"
-              >
-                Editor
-              </Link>
+              {user?.role === 'root' && (
+                <Link
+                  className="nav-link"
+                  activeProps={{ className: 'nav-link nav-link-active' }}
+                  to="/companies/new"
+                >
+                  New company
+                </Link>
+              )}
+              {user && (
+                <Link
+                  className="nav-link"
+                  activeProps={{ className: 'nav-link nav-link-active' }}
+                  to="/"
+                >
+                  Questions
+                </Link>
+              )}
+              {user && (
+                <Link
+                  className="nav-link"
+                  activeProps={{ className: 'nav-link nav-link-active' }}
+                  to="/code"
+                >
+                  Code
+                </Link>
+              )}
+              {user && (user.role === 'root' || user.role === 'master') && (
+                <Link
+                  className="nav-link"
+                  activeProps={{ className: 'nav-link nav-link-active' }}
+                  to="/users"
+                >
+                  Users
+                </Link>
+              )}
+              {user?.role === 'root' && (
+                <Link
+                  className="nav-link"
+                  activeProps={{ className: 'nav-link nav-link-active' }}
+                  to="/specialties"
+                >
+                  Specialties
+                </Link>
+              )}
+              {user ? (
+                <>
+                  <Link className="nav-link" to="/account">
+                    {user.name}
+                  </Link>
+                  <button
+                    className="button-secondary"
+                    type="button"
+                    onClick={() => void handleLogout()}
+                  >
+                    Log out
+                  </button>
+                </>
+              ) : (
+                <Link className="button-primary" to="/login">
+                  Log in
+                </Link>
+              )}
             </nav>
           </div>
         </header>
@@ -90,10 +178,10 @@ export function RootLayout() {
             isQuestionsPage ? 'overflow-hidden' : 'overflow-y-auto'
           }`}
         >
-          <Outlet />
+          {user || isLoginPage ? <Outlet /> : <LoginPage />}
         </main>
         <footer className="mx-auto w-full max-w-6xl flex-none px-5 pb-4 text-xs text-slate-500">
-          Ambiente local de preparação para entrevistas.
+          Local interview preparation environment.
         </footer>
       </div>
     </CompanyProvider>

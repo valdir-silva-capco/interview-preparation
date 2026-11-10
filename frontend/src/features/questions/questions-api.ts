@@ -5,6 +5,7 @@ export interface Question {
   prompt: string;
   answer: string | null;
   isFavorite: boolean;
+  createdById: string | null;
   createdAt: string;
   updatedAt: string;
 }
