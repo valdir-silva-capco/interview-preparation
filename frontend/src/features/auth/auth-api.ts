@@ -82,6 +82,14 @@ export function deactivateUser(id: string): Promise<void> {
   return apiRequest<void>(`/users/${id}`, { method: 'DELETE' });
 }
 
+export function resetUserPassword(
+  id: string,
+): Promise<{ password: string }> {
+  return apiRequest<{ password: string }>(`/users/${id}/reset-password`, {
+    method: 'POST',
+  });
+}
+
 export function getSpecialties(): Promise<Specialty[]> {
   return apiRequest<Specialty[]>('/specialties');
 }

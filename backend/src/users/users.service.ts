@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { randomBytes } from 'node:crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { Repository } from 'typeorm';
 import { In } from 'typeorm';
@@ -140,6 +141,20 @@ export class UsersService {
     await this.usersRepository.save(user);
   }
 
+  async resetPassword(
+    actor: AuthenticatedUser,
+    id: string,
+  ): Promise<{ password: string }> {
+    const user = await this.findOne(id);
+    this.assertCanResetPassword(actor, user);
+
+    const password = randomBytes(24).toString('base64url');
+    user.passwordHash = await hashPassword(password);
+    user.tokenVersion += 1;
+    await this.usersRepository.save(user);
+    return { password };
+  }
+
   private async findOne(id: string): Promise<User> {
     const user = await this.usersRepository
       .createQueryBuilder('user')
@@ -210,6 +225,17 @@ export class UsersService {
       !user.companies.some((company) => actor.companyIds.includes(company.id))
     ) {
       throw new ForbiddenException('You cannot manage this user.');
+    }
+  }
+
+  private assertCanResetPassword(actor: AuthenticatedUser, user: User): void {
+    if (actor.role === 'root' || actor.id === user.id) return;
+    if (
+      actor.role !== 'master' ||
+      user.role !== 'user' ||
+      !user.companies.some((company) => actor.companyIds.includes(company.id))
+    ) {
+      throw new ForbiddenException("You cannot reset this user's password.");
     }
   }
 

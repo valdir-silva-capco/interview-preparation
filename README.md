@@ -55,6 +55,9 @@ to the internet.
 
 Tokens expire after 20 hours. Logging out, changing a password, or
 deactivating an account invalidates its active tokens.
+Root can generate a one-time password for any account. Masters can generate one
+for themselves and users in their linked companies. The generated password is
+displayed once in the user-management screen for copying.
 
 The PostgreSQL password in `.env.example` is for local development only. Change
 it before using the stack in any shared environment.

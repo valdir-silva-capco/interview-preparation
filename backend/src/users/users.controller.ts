@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -51,5 +52,15 @@ export class UsersController {
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<void> {
     return this.usersService.deactivate(request.user!, id);
+  }
+
+  @Post(':id/reset-password')
+  @Header('Cache-Control', 'no-store')
+  @ApiOperation({ summary: 'Generate a one-time temporary password' })
+  resetPassword(
+    @Req() request: Request,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<{ password: string }> {
+    return this.usersService.resetPassword(request.user!, id);
   }
 }

@@ -15,6 +15,7 @@ forwarded to a separate local service over a Unix socket.
 - `POST /api/v1/users`
 - `PATCH /api/v1/users/:id`
 - `DELETE /api/v1/users/:id` (deactivates the account)
+- `POST /api/v1/users/:id/reset-password` (generates a one-time password)
 - `GET /api/v1/specialties`
 - `POST /api/v1/specialties`
 - `PATCH /api/v1/specialties/:id`
@@ -45,7 +46,10 @@ All endpoints except health and login require a bearer token. Tokens expire
 after 20 hours. Root users have global access; master and user accounts are
 restricted to their linked companies. Masters manage only user accounts;
 users can read company content and edit or delete only their own questions and
-code snippets. User deletion is logical (deactivation).
+code snippets. User deletion is logical (deactivation). Root can reset any
+account password; masters can reset their own password and passwords for users
+in their linked companies. The generated password is returned once with
+no-store caching and invalidates the target account's existing sessions.
 
 Set a unique `AUTH_TOKEN_SECRET` of at least 32 bytes in `backend/.env` before
 starting the stack. Start the API, PostgreSQL, and code runner with
