@@ -181,7 +181,11 @@ export function UsersPage() {
         </Link>
       </div>
 
-      <form className="panel grid gap-4 md:grid-cols-2" onSubmit={handleSubmit}>
+      <form
+        autoComplete="off"
+        className="panel grid gap-4 md:grid-cols-2"
+        onSubmit={handleSubmit}
+      >
         <h2 className="text-lg font-semibold md:col-span-2">
           {editingUser ? 'Edit user' : 'Add user'}
         </h2>
@@ -189,6 +193,7 @@ export function UsersPage() {
           Name
           <input
             required
+            autoComplete="off"
             maxLength={120}
             className="field"
             value={name}
@@ -199,6 +204,7 @@ export function UsersPage() {
           Email
           <input
             required
+            autoComplete="off"
             type="email"
             maxLength={320}
             className="field"
@@ -211,6 +217,7 @@ export function UsersPage() {
             Initial password (at least 8 characters)
             <input
               required
+              autoComplete="new-password"
               type="password"
               minLength={8}
               maxLength={200}
@@ -238,6 +245,7 @@ export function UsersPage() {
         <label className="grid gap-2 text-sm text-slate-200">
           Avatar URL (optional)
           <input
+            autoComplete="off"
             type="url"
             maxLength={2048}
             className="field"
@@ -249,6 +257,7 @@ export function UsersPage() {
           Companies (select at least one)
           <select
             required
+            autoComplete="off"
             multiple
             className="field min-h-32"
             value={companyIds}
@@ -268,6 +277,7 @@ export function UsersPage() {
         <label className="grid gap-2 text-sm text-slate-200">
           Technology specialties
           <select
+            autoComplete="off"
             multiple
             className="field min-h-32"
             value={specialtyIds}
