@@ -124,6 +124,20 @@ export function RootLayout() {
                     role="group"
                     aria-label="Companies"
                   >
+                    {user.role === 'root' && (
+                      <>
+                        <Link
+                          className="nav-link w-full justify-start"
+                          to="/companies/new"
+                        >
+                          + New Company
+                        </Link>
+                        <div
+                          aria-hidden="true"
+                          className="my-1 border-t border-slate-700"
+                        />
+                      </>
+                    )}
                     {companiesQuery.data.map((item) => (
                       <button
                         key={item.id}
@@ -168,14 +182,9 @@ export function RootLayout() {
                   </summary>
                   <div className="absolute right-0 top-full z-50 mt-2 grid min-w-48 gap-1 rounded-xl border border-slate-700 bg-slate-900 p-2 shadow-xl">
                     {user.role === 'root' && (
-                      <>
-                        <Link className="nav-link" to="/companies/new">
-                          New company
-                        </Link>
-                        <Link className="nav-link" to="/specialties">
-                          Specialties
-                        </Link>
-                      </>
+                      <Link className="nav-link" to="/specialties">
+                        Specialties
+                      </Link>
                     )}
                     <Link className="nav-link" to="/users">
                       Users
