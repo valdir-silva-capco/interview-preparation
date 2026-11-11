@@ -114,9 +114,10 @@ export function RootLayout() {
                 <details className="relative" ref={companyMenuRef}>
                   <summary
                     className="nav-link cursor-pointer list-none"
-                    aria-label={`Select company. Current company: ${company?.name ?? ''}`}
+                    aria-label="Company Selection"
+                    title="Company Selection"
                   >
-                    {company?.name ?? 'Company'}
+                    Company Selection
                   </summary>
                   <div
                     className="absolute left-0 top-full z-50 mt-2 grid min-w-48 gap-1 rounded-xl border border-slate-700 bg-slate-900 p-2 shadow-xl"
