@@ -21,9 +21,8 @@ export async function apiRequest<T>(
 
   if (!response.ok) {
     if (response.status === 401 && accessToken) {
-      useAuthStore.getState().clearSession();
       if (window.location.pathname !== '/login') {
-        window.location.assign('/login');
+        window.dispatchEvent(new Event('auth:expired'));
       }
     }
     const body = await response.text();

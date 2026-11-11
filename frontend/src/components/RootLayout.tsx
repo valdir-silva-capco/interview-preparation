@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Link,
@@ -19,6 +19,7 @@ export function RootLayout() {
   });
   const isQuestionsPage = pathname === '/';
   const isLoginPage = pathname === '/login';
+  const adminMenuRef = useRef<HTMLDetailsElement>(null);
   const user = useAuthStore((state) => state.user);
   const expiresAt = useAuthStore((state) => state.expiresAt);
   const clearSession = useAuthStore((state) => state.clearSession);
@@ -43,6 +44,23 @@ export function RootLayout() {
       void navigate({ to: '/', replace: true });
     }
   }, [isLoginPage, navigate, user]);
+
+  useEffect(() => {
+    adminMenuRef.current?.removeAttribute('open');
+  }, [pathname]);
+
+  useEffect(() => {
+    function handleExpiredSession() {
+      clearSession();
+      queryClient.clear();
+      void navigate({ to: '/login', replace: true });
+    }
+
+    window.addEventListener('auth:expired', handleExpiredSession);
+    return () => {
+      window.removeEventListener('auth:expired', handleExpiredSession);
+    };
+  }, [clearSession, navigate, queryClient]);
 
   useEffect(() => {
     if (!user || !expiresAt) return;
@@ -88,7 +106,7 @@ export function RootLayout() {
             </Link>
             <nav
               aria-label="Main navigation"
-              className="flex flex-wrap items-center gap-2"
+              className="flex flex-wrap items-center gap-3"
             >
               {user && companiesQuery.data && companiesQuery.data.length > 0 && (
                 <label className="flex items-center gap-2 text-sm text-slate-300">
@@ -107,50 +125,45 @@ export function RootLayout() {
                   </select>
                 </label>
               )}
-              {user?.role === 'root' && (
-                <Link
-                  className="nav-link"
-                  activeProps={{ className: 'nav-link nav-link-active' }}
-                  to="/companies/new"
-                >
-                  New company
-                </Link>
-              )}
-              {user && (
-                <Link
-                  className="nav-link"
-                  activeProps={{ className: 'nav-link nav-link-active' }}
-                  to="/"
-                >
-                  Questions
-                </Link>
-              )}
-              {user && (
-                <Link
-                  className="nav-link"
-                  activeProps={{ className: 'nav-link nav-link-active' }}
-                  to="/code"
-                >
-                  Code
-                </Link>
-              )}
               {user && (user.role === 'root' || user.role === 'master') && (
-                <Link
-                  className="nav-link"
-                  activeProps={{ className: 'nav-link nav-link-active' }}
-                  to="/users"
-                >
-                  Users
-                </Link>
+                <details className="relative" ref={adminMenuRef}>
+                  <summary className="nav-link cursor-pointer list-none">
+                    Admin
+                  </summary>
+                  <div className="absolute right-0 top-full z-50 mt-2 grid min-w-48 gap-1 rounded-xl border border-slate-700 bg-slate-900 p-2 shadow-xl">
+                    {user.role === 'root' && (
+                      <>
+                        <Link className="nav-link" to="/companies/new">
+                          New company
+                        </Link>
+                        <Link className="nav-link" to="/specialties">
+                          Specialties
+                        </Link>
+                      </>
+                    )}
+                    <Link className="nav-link" to="/users">
+                      Users
+                    </Link>
+                  </div>
+                </details>
               )}
-              {user?.role === 'root' && (
-                <Link
-                  className="nav-link"
-                  activeProps={{ className: 'nav-link nav-link-active' }}
-                  to="/specialties"
-                >
-                  Specialties
-                </Link>
+              {user && (
+                <div className="flex flex-wrap items-center gap-2">
+                  <Link
+                    className="nav-link"
+                    activeProps={{ className: 'nav-link nav-link-active' }}
+                    to="/"
+                  >
+                    Questions
+                  </Link>
+                  <Link
+                    className="nav-link"
+                    activeProps={{ className: 'nav-link nav-link-active' }}
+                    to="/code"
+                  >
+                    Code
+                  </Link>
+                </div>
               )}
               {user ? (
                 <>
