@@ -143,6 +143,24 @@ export function RootLayout() {
                   </div>
                 </details>
               )}
+              {user && (
+                <div className="flex flex-wrap items-center gap-2">
+                  <Link
+                    className="nav-link"
+                    activeProps={{ className: 'nav-link nav-link-active' }}
+                    to="/"
+                  >
+                    Questions
+                  </Link>
+                  <Link
+                    className="nav-link"
+                    activeProps={{ className: 'nav-link nav-link-active' }}
+                    to="/code"
+                  >
+                    Code
+                  </Link>
+                </div>
+              )}
               {user && (user.role === 'root' || user.role === 'master') && (
                 <details className="relative" ref={adminMenuRef}>
                   <summary className="nav-link cursor-pointer list-none">
@@ -164,24 +182,6 @@ export function RootLayout() {
                     </Link>
                   </div>
                 </details>
-              )}
-              {user && (
-                <div className="flex flex-wrap items-center gap-2">
-                  <Link
-                    className="nav-link"
-                    activeProps={{ className: 'nav-link nav-link-active' }}
-                    to="/"
-                  >
-                    Questions
-                  </Link>
-                  <Link
-                    className="nav-link"
-                    activeProps={{ className: 'nav-link nav-link-active' }}
-                    to="/code"
-                  >
-                    Code
-                  </Link>
-                </div>
               )}
               {user ? (
                 <>
