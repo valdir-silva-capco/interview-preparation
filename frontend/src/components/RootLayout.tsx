@@ -20,6 +20,7 @@ export function RootLayout() {
   const isQuestionsPage = pathname === '/';
   const isLoginPage = pathname === '/login';
   const adminMenuRef = useRef<HTMLDetailsElement>(null);
+  const companyMenuRef = useRef<HTMLDetailsElement>(null);
   const user = useAuthStore((state) => state.user);
   const expiresAt = useAuthStore((state) => state.expiresAt);
   const clearSession = useAuthStore((state) => state.clearSession);
@@ -47,6 +48,7 @@ export function RootLayout() {
 
   useEffect(() => {
     adminMenuRef.current?.removeAttribute('open');
+    companyMenuRef.current?.removeAttribute('open');
   }, [pathname]);
 
   useEffect(() => {
@@ -109,21 +111,36 @@ export function RootLayout() {
               className="flex flex-wrap items-center gap-3"
             >
               {user && companiesQuery.data && companiesQuery.data.length > 0 && (
-                <label className="flex items-center gap-2 text-sm text-slate-300">
-                  Company
-                  <select
-                    className="field w-auto py-2"
-                    aria-label="Selected company"
-                    value={company?.id ?? ''}
-                    onChange={(event) => selectCompany(event.target.value)}
+                <details className="relative" ref={companyMenuRef}>
+                  <summary
+                    className="nav-link cursor-pointer list-none"
+                    aria-label={`Select company. Current company: ${company?.name ?? ''}`}
+                  >
+                    {company?.name ?? 'Company'}
+                  </summary>
+                  <div
+                    className="absolute left-0 top-full z-50 mt-2 grid min-w-48 gap-1 rounded-xl border border-slate-700 bg-slate-900 p-2 shadow-xl"
+                    role="group"
+                    aria-label="Companies"
                   >
                     {companiesQuery.data.map((item) => (
-                      <option key={item.id} value={item.id}>
+                      <button
+                        key={item.id}
+                        className={`nav-link w-full justify-start ${
+                          item.id === company?.id ? 'nav-link-active' : ''
+                        }`}
+                        type="button"
+                        aria-pressed={item.id === company?.id}
+                        onClick={() => {
+                          selectCompany(item.id);
+                          companyMenuRef.current?.removeAttribute('open');
+                        }}
+                      >
                         {item.name}
-                      </option>
+                      </button>
                     ))}
-                  </select>
-                </label>
+                  </div>
+                </details>
               )}
               {user && (user.role === 'root' || user.role === 'master') && (
                 <details className="relative" ref={adminMenuRef}>
