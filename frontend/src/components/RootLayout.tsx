@@ -111,7 +111,15 @@ export function RootLayout() {
               className="flex flex-wrap items-center gap-3"
             >
               {user && companiesQuery.data && companiesQuery.data.length > 0 && (
-                <details className="relative" ref={companyMenuRef}>
+                <details
+                  className="relative"
+                  ref={companyMenuRef}
+                  onToggle={(event) => {
+                    if (event.currentTarget.open) {
+                      adminMenuRef.current?.removeAttribute('open');
+                    }
+                  }}
+                >
                   <summary
                     className="nav-link cursor-pointer list-none"
                     aria-label="Company Selection"
@@ -176,7 +184,15 @@ export function RootLayout() {
                 </div>
               )}
               {user && (user.role === 'root' || user.role === 'master') && (
-                <details className="relative" ref={adminMenuRef}>
+                <details
+                  className="relative"
+                  ref={adminMenuRef}
+                  onToggle={(event) => {
+                    if (event.currentTarget.open) {
+                      companyMenuRef.current?.removeAttribute('open');
+                    }
+                  }}
+                >
                   <summary className="nav-link cursor-pointer list-none">
                     Admin
                   </summary>
