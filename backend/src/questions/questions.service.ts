@@ -1,10 +1,11 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, type Repository } from 'typeorm';
+import { DataSource, In, type Repository } from 'typeorm';
 import { Company } from '../companies/company.entity.js';
 import { CompaniesService } from '../companies/companies.service.js';
 import type { CreateQuestionDto } from './dto/create-question.dto.js';
@@ -12,6 +13,7 @@ import type { SetQuestionFavoriteDto } from './dto/set-question-favorite.dto.js'
 import type { UpdateQuestionDto } from './dto/update-question.dto.js';
 import { Question } from './question.entity.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
+import { TechnologySpecialty } from '../specialties/technology-specialty.entity.js';
 
 const MAX_FAVORITE_QUESTIONS = 10;
 
@@ -20,6 +22,8 @@ export class QuestionsService {
   constructor(
     @InjectRepository(Question)
     private readonly questionsRepository: Repository<Question>,
+    @InjectRepository(TechnologySpecialty)
+    private readonly specialtiesRepository: Repository<TechnologySpecialty>,
     private readonly companiesService: CompaniesService,
     private readonly dataSource: DataSource,
   ) {}
@@ -29,17 +33,18 @@ export class QuestionsService {
     return this.questionsRepository.find({
       where: { companyId },
       order: { isFavorite: 'DESC', updatedAt: 'DESC' },
+      relations: { specialties: true },
     });
   }
 
   async findOne(companyId: string, id: string): Promise<Question> {
     await this.companiesService.findOne(companyId);
-    const question = await this.questionsRepository.findOneBy({
-      id,
-      companyId,
+    const question = await this.questionsRepository.findOne({
+      where: { id, companyId },
+      relations: { specialties: true },
     });
     if (!question) {
-      throw new NotFoundException('Pergunta não encontrada.');
+      throw new NotFoundException('Question not found.');
     }
     return question;
   }
@@ -55,6 +60,7 @@ export class QuestionsService {
       createdById: actor.id,
       prompt: dto.prompt.trim(),
       answer: dto.answer?.trim() || null,
+      specialties: await this.resolveSpecialties(dto.specialtyIds ?? []),
     });
     return this.questionsRepository.save(question);
   }
@@ -73,6 +79,9 @@ export class QuestionsService {
     if (dto.answer !== undefined) {
       question.answer = dto.answer?.trim() || null;
     }
+    if (dto.specialtyIds !== undefined) {
+      question.specialties = await this.resolveSpecialties(dto.specialtyIds);
+    }
     return this.questionsRepository.save(question);
   }
 
@@ -90,13 +99,16 @@ export class QuestionsService {
         .andWhere('company."isActive" = true')
         .getOne();
       if (!company) {
-        throw new NotFoundException('Empresa não encontrada.');
+        throw new NotFoundException('Company not found.');
       }
 
       const questions = manager.getRepository(Question);
-      const question = await questions.findOneBy({ id, companyId });
+      const question = await questions.findOne({
+        where: { id, companyId },
+        relations: { specialties: true },
+      });
       if (!question) {
-        throw new NotFoundException('Pergunta não encontrada.');
+        throw new NotFoundException('Question not found.');
       }
 
       if (dto.isFavorite && !question.isFavorite) {
@@ -106,7 +118,7 @@ export class QuestionsService {
         });
         if (favoriteCount >= MAX_FAVORITE_QUESTIONS) {
           throw new ConflictException(
-            `É possível favoritar no máximo ${MAX_FAVORITE_QUESTIONS} perguntas por empresa.`,
+            `You can favorite up to ${MAX_FAVORITE_QUESTIONS} questions per company.`,
           );
         }
       }
@@ -130,8 +142,27 @@ export class QuestionsService {
     actor: AuthenticatedUser,
     createdById: string | null,
   ): void {
-    if (actor.role !== 'root' && actor.role !== 'master' && createdById !== actor.id) {
+    if (
+      actor.role !== 'root' &&
+      actor.role !== 'master' &&
+      createdById !== actor.id
+    ) {
       throw new NotFoundException('Question not found.');
     }
+  }
+
+  private async resolveSpecialties(
+    specialtyIds: string[],
+  ): Promise<TechnologySpecialty[]> {
+    if (specialtyIds.length === 0) return [];
+    const specialties = await this.specialtiesRepository.findBy({
+      id: In(specialtyIds),
+    });
+    if (specialties.length !== specialtyIds.length) {
+      throw new BadRequestException(
+        'One or more selected specialties could not be found.',
+      );
+    }
+    return specialties;
   }
 }

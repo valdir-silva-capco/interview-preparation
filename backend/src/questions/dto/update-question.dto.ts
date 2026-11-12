@@ -1,6 +1,9 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  ArrayUnique,
+  IsArray,
   IsString,
+  IsUUID,
   Matches,
   MaxLength,
   MinLength,
@@ -23,4 +26,11 @@ export class UpdateQuestionDto {
   @IsString()
   @MaxLength(20_000)
   answer?: string | null;
+
+  @ApiPropertyOptional({ type: [String], format: 'uuid' })
+  @ValidateIf((_object, value: unknown) => value !== undefined)
+  @IsArray()
+  @ArrayUnique()
+  @IsUUID('4', { each: true })
+  specialtyIds?: string[];
 }

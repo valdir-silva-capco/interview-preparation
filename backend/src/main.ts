@@ -31,7 +31,7 @@ async function bootstrap(): Promise<void> {
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Interview Preparation API')
     .setDescription(
-      'Cadastro de perguntas e execução local isolada de pequenos trechos.',
+      'Manage interview questions and run small code snippets in an isolated local environment.',
     )
     .setVersion('1.0')
     .build();

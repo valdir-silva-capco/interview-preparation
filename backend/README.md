@@ -37,7 +37,8 @@ forwarded to a separate local service over a Unix socket.
 - `POST /api/v1/companies/:companyId/code/run`
 - OpenAPI interface: `/api/docs`
 
-Questions require `prompt` and may include an `answer`. Saved code snippets
+Questions require `prompt`, may include an `answer`, and may include
+`specialtyIds`, an array of technology specialty UUIDs. Saved code snippets
 include a title, language (`python` or `node`), and source code. Execution
 returns stdout, stderr, and the exit code, but does not store execution history.
 Each company can have up to ten favorite questions, which are returned before

@@ -32,7 +32,7 @@ export class QuestionsController {
   constructor(private readonly questionsService: QuestionsService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Listar perguntas' })
+  @ApiOperation({ summary: 'List questions' })
   @ApiOkResponse({ type: Question, isArray: true })
   findAll(
     @Param('companyId', ParseUUIDPipe) companyId: string,
@@ -41,7 +41,7 @@ export class QuestionsController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Consultar uma pergunta' })
+  @ApiOperation({ summary: 'Get a question' })
   @ApiOkResponse({ type: Question })
   findOne(
     @Param('companyId', ParseUUIDPipe) companyId: string,
@@ -51,7 +51,7 @@ export class QuestionsController {
   }
 
   @Post()
-  @ApiOperation({ summary: 'Cadastrar uma pergunta' })
+  @ApiOperation({ summary: 'Create a question' })
   @ApiCreatedResponse({ type: Question })
   create(
     @Param('companyId', ParseUUIDPipe) companyId: string,
@@ -62,7 +62,7 @@ export class QuestionsController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Atualizar uma pergunta' })
+  @ApiOperation({ summary: 'Update a question' })
   @ApiOkResponse({ type: Question })
   update(
     @Param('companyId', ParseUUIDPipe) companyId: string,
@@ -75,7 +75,7 @@ export class QuestionsController {
 
   @Patch(':id/favorite')
   @Roles('root', 'master')
-  @ApiOperation({ summary: 'Favoritar ou desfavoritar uma pergunta' })
+  @ApiOperation({ summary: 'Favorite or unfavorite a question' })
   @ApiOkResponse({ type: Question })
   setFavorite(
     @Param('companyId', ParseUUIDPipe) companyId: string,
@@ -87,7 +87,7 @@ export class QuestionsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Excluir uma pergunta' })
+  @ApiOperation({ summary: 'Delete a question' })
   @ApiNoContentResponse()
   async remove(
     @Param('companyId', ParseUUIDPipe) companyId: string,

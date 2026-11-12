@@ -32,11 +32,11 @@ function CreateQuestionForm({ companyId }: { companyId: string }) {
   return (
     <section className="mx-auto grid w-full max-w-3xl gap-6">
       <div>
-        <p className="eyebrow">Sua coleção</p>
-        <h1 className="page-title">Nova pergunta</h1>
+        <p className="eyebrow">Your collection</p>
+        <h1 className="page-title">New Question</h1>
       </div>
       <QuestionForm
-        submitLabel="Salvar pergunta"
+        submitLabel="Save question"
         isPending={mutation.isPending}
         error={mutation.error?.message}
         onSubmit={(input) => mutation.mutate(input)}

@@ -1,11 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  ArrayUnique,
+  IsArray,
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
   Matches,
   MaxLength,
-  MinLength,
+  ValidateIf,
 } from 'class-validator';
 
 export class CreateQuestionDto {
@@ -21,4 +24,11 @@ export class CreateQuestionDto {
   @IsString()
   @MaxLength(20_000)
   answer?: string | null;
+
+  @ApiPropertyOptional({ type: [String], format: 'uuid' })
+  @ValidateIf((_object, value: unknown) => value !== undefined)
+  @IsArray()
+  @ArrayUnique()
+  @IsUUID('4', { each: true })
+  specialtyIds?: string[];
 }

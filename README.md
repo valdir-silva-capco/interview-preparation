@@ -10,7 +10,8 @@ Users sign in locally with an email and password. Companies scope questions and
 saved code snippets; users can access only their linked companies. Root users
 manage companies, master accounts, and technology specialties. Masters manage
 user accounts within their linked companies. Users can read company content
-and manage their own questions and code snippets.
+and manage their own questions and code snippets. Questions can be tagged with
+technology specialties, which are displayed beside each question title.
 
 Open **Manage Companies** from the **Company Selection** menu to rename or
 activate/deactivate companies. Root can manage all companies; other roles can

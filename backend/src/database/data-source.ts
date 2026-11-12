@@ -11,6 +11,8 @@ import { User } from '../users/user.entity.js';
 import { TechnologySpecialty } from '../specialties/technology-specialty.entity.js';
 import { AddAuthenticationAndOwnership1760000002000 } from './migrations/1760000002000-AddAuthenticationAndOwnership.js';
 import { AddCompanyActivation1760000003000 } from './migrations/1760000003000-AddCompanyActivation.js';
+import { TranslateDefaultCompanyName1760000004000 } from './migrations/1760000004000-TranslateDefaultCompanyName.js';
+import { AddQuestionSpecialties1760000005000 } from './migrations/1760000005000-AddQuestionSpecialties.js';
 
 export default new DataSource({
   type: 'postgres',
@@ -26,6 +28,8 @@ export default new DataSource({
     AddQuestionFavorites1760000001000,
     AddAuthenticationAndOwnership1760000002000,
     AddCompanyActivation1760000003000,
+    TranslateDefaultCompanyName1760000004000,
+    AddQuestionSpecialties1760000005000,
   ],
   synchronize: false,
 });

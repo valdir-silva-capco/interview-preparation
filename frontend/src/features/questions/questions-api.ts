@@ -4,6 +4,7 @@ export interface Question {
   id: string;
   prompt: string;
   answer: string | null;
+  specialties: Array<{ id: string; name: string }>;
   isFavorite: boolean;
   createdById: string | null;
   createdAt: string;
@@ -13,6 +14,7 @@ export interface Question {
 export interface SaveQuestionInput {
   prompt: string;
   answer: string | null;
+  specialtyIds: string[];
 }
 
 export const questionKeys = {

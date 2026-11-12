@@ -4,7 +4,9 @@ import {
   type FormEvent,
   type KeyboardEvent,
 } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
+import { authKeys, getSpecialties } from '../auth/auth-api';
 import type { SaveQuestionInput } from './questions-api';
 
 type TextareaChangeHandler = (value: string) => void;
@@ -16,6 +18,7 @@ function formatBulletMarkers(value: string): string {
 interface QuestionFormProps {
   initialPrompt?: string;
   initialAnswer?: string | null;
+  initialSpecialtyIds?: string[];
   submitLabel: string;
   isPending: boolean;
   error?: string;
@@ -25,6 +28,7 @@ interface QuestionFormProps {
 export function QuestionForm({
   initialPrompt = '',
   initialAnswer = '',
+  initialSpecialtyIds = [],
   submitLabel,
   isPending,
   error,
@@ -32,7 +36,12 @@ export function QuestionForm({
 }: QuestionFormProps) {
   const [prompt, setPrompt] = useState(initialPrompt);
   const [answer, setAnswer] = useState(initialAnswer ?? '');
+  const [specialtyIds, setSpecialtyIds] = useState(initialSpecialtyIds);
   const [validationError, setValidationError] = useState('');
+  const specialtiesQuery = useQuery({
+    queryKey: authKeys.specialties,
+    queryFn: getSpecialties,
+  });
 
   function handleListKeyDown(
     event: KeyboardEvent<HTMLTextAreaElement>,
@@ -47,8 +56,7 @@ export function QuestionForm({
     const cursor = textarea.selectionStart;
     const lineStart = currentValue.lastIndexOf('\n', cursor - 1) + 1;
     const lineEndIndex = currentValue.indexOf('\n', cursor);
-    const lineEnd =
-      lineEndIndex === -1 ? currentValue.length : lineEndIndex;
+    const lineEnd = lineEndIndex === -1 ? currentValue.length : lineEndIndex;
     if (cursor !== lineEnd) return;
 
     const currentLine = currentValue.slice(lineStart, cursor);
@@ -86,13 +94,14 @@ export function QuestionForm({
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!prompt.trim()) {
-      setValidationError('O enunciado é obrigatório.');
+      setValidationError('The question prompt is required.');
       return;
     }
     setValidationError('');
     onSubmit({
       prompt: prompt.trim(),
       answer: answer.trim() || null,
+      specialtyIds,
     });
   }
 
@@ -137,7 +146,7 @@ export function QuestionForm({
   return (
     <form className="panel grid gap-5" onSubmit={handleSubmit}>
       <label className="grid gap-2 text-sm font-medium text-slate-200">
-        Enunciado
+        Question prompt
         <input
           required
           autoFocus
@@ -147,21 +156,64 @@ export function QuestionForm({
             setPrompt(event.target.value);
             setValidationError('');
           }}
-          placeholder="Escreva a pergunta da entrevista"
+          placeholder="Write the interview question"
           className="field h-12"
         />
       </label>
 
+      <fieldset className="grid gap-2">
+        <legend className="text-sm font-medium text-slate-200">
+          Specialties <span className="text-slate-500">(optional)</span>
+        </legend>
+        {specialtiesQuery.isPending && (
+          <p role="status" className="text-sm text-slate-400">
+            Loading specialties…
+          </p>
+        )}
+        {specialtiesQuery.isError && (
+          <p role="alert" className="text-sm text-red-200">
+            Failed to load specialties: {specialtiesQuery.error.message}
+          </p>
+        )}
+        {specialtiesQuery.data?.length === 0 && (
+          <p className="text-sm text-slate-400">
+            No specialties available yet.
+          </p>
+        )}
+        {specialtiesQuery.data && specialtiesQuery.data.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {specialtiesQuery.data.map((specialty) => (
+              <label
+                className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-200"
+                key={specialty.id}
+              >
+                <input
+                  type="checkbox"
+                  checked={specialtyIds.includes(specialty.id)}
+                  onChange={(event) =>
+                    setSpecialtyIds((current) =>
+                      event.target.checked
+                        ? [...current, specialty.id]
+                        : current.filter((id) => id !== specialty.id),
+                    )
+                  }
+                />
+                {specialty.name}
+              </label>
+            ))}
+          </div>
+        )}
+      </fieldset>
+
       <label className="grid gap-2 text-sm font-medium text-slate-200">
-        Resposta ou explicação{' '}
-        <span className="text-slate-500">(opcional)</span>
+        Answer or explanation <span className="text-slate-500">(optional)</span>
         <textarea
           maxLength={20_000}
           rows={5}
           value={answer}
           onChange={handleAnswerChange}
           onKeyDown={(event) => handleListKeyDown(event, setAnswer)}
-          placeholder="Adicione uma resposta ou explicação, se desejar"
+          placeholder="Add an answer or explanation, if desired"
           className="field min-h-32 resize-y"
         />
       </label>
@@ -185,10 +237,10 @@ export function QuestionForm({
 
       <div className="flex flex-wrap gap-3">
         <button className="button-primary" type="submit" disabled={isPending}>
-          {isPending ? 'Salvando…' : submitLabel}
+          {isPending ? 'Saving…' : submitLabel}
         </button>
         <Link className="button-secondary" to="/">
-          Cancelar
+          Cancel
         </Link>
       </div>
     </form>

@@ -1,11 +1,14 @@
 import {
   CreateDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   PrimaryGeneratedColumn,
   Column,
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { TechnologySpecialty } from '../specialties/technology-specialty.entity.js';
 
 @Entity({ name: 'questions' })
 export class Question {
@@ -32,6 +35,15 @@ export class Question {
   @ApiPropertyOptional({ maxLength: 20_000, nullable: true })
   @Column({ type: 'text', nullable: true })
   answer!: string | null;
+
+  @ApiProperty({ type: () => [TechnologySpecialty] })
+  @ManyToMany(() => TechnologySpecialty)
+  @JoinTable({
+    name: 'question_specialties',
+    joinColumn: { name: 'questionId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'specialtyId', referencedColumnName: 'id' },
+  })
+  specialties!: TechnologySpecialty[];
 
   @ApiProperty({ type: String, format: 'date-time' })
   @CreateDateColumn({ type: 'timestamptz' })

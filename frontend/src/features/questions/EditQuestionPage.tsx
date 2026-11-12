@@ -56,16 +56,14 @@ function EditQuestionForm({
   });
 
   if (questionQuery.isPending) {
-    return <p className="panel">Carregando pergunta…</p>;
+    return <p className="panel">Loading question…</p>;
   }
   if (questionQuery.isError) {
     return (
       <div role="alert" className="panel grid gap-3 text-red-200">
-        <p>
-          Não foi possível carregar a pergunta: {questionQuery.error.message}
-        </p>
+        <p>Failed to load the question: {questionQuery.error.message}</p>
         <Link className="button-secondary w-fit" to="/">
-          Voltar às perguntas
+          Back to questions
         </Link>
       </div>
     );
@@ -74,14 +72,17 @@ function EditQuestionForm({
   return (
     <section className="mx-auto grid w-full max-w-3xl gap-6">
       <div>
-        <p className="eyebrow">Sua coleção</p>
-        <h1 className="page-title">Editar pergunta</h1>
+        <p className="eyebrow">Your collection</p>
+        <h1 className="page-title">Edit Question</h1>
       </div>
       <QuestionForm
         key={questionQuery.data.id}
         initialPrompt={questionQuery.data.prompt}
         initialAnswer={questionQuery.data.answer}
-        submitLabel="Salvar alterações"
+        initialSpecialtyIds={questionQuery.data.specialties.map(
+          (specialty) => specialty.id,
+        )}
+        submitLabel="Save changes"
         isPending={mutation.isPending}
         error={mutation.error?.message}
         onSubmit={(input) => mutation.mutate(input)}

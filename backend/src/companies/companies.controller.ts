@@ -27,7 +27,7 @@ export class CompaniesController {
   constructor(private readonly companiesService: CompaniesService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Listar empresas cadastradas' })
+  @ApiOperation({ summary: 'List registered companies' })
   @ApiOkResponse({ type: Company, isArray: true })
   findAll(@Req() request: Request): Promise<Company[]> {
     return this.companiesService.findAll(request.user!);
@@ -42,7 +42,7 @@ export class CompaniesController {
 
   @Post()
   @Roles('root')
-  @ApiOperation({ summary: 'Cadastrar uma empresa' })
+  @ApiOperation({ summary: 'Create a company' })
   @ApiCreatedResponse({ type: Company })
   create(@Body() dto: CreateCompanyDto): Promise<Company> {
     return this.companiesService.create(dto);

@@ -22,13 +22,13 @@ export class AddCompaniesAndScopedCode1760000000000 implements MigrationInterfac
     `);
     await queryRunner.query(`
       INSERT INTO "companies" ("name")
-      SELECT 'Empresa padrão'
+      SELECT 'Default Company'
       WHERE EXISTS (SELECT 1 FROM "questions")
     `);
     await queryRunner.query(`
       UPDATE "questions"
       SET "companyId" = (
-        SELECT "id" FROM "companies" WHERE lower("name") = lower('Empresa padrão')
+        SELECT "id" FROM "companies" WHERE lower("name") = lower('Default Company')
       )
       WHERE "companyId" IS NULL
     `);

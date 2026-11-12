@@ -33,9 +33,7 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
       const lastEditedQuestionId = sessionStorage.getItem(
         lastEditedQuestionStorageKey(companyId),
       );
-      return lastEditedQuestionId
-        ? new Set([lastEditedQuestionId])
-        : new Set();
+      return lastEditedQuestionId ? new Set([lastEditedQuestionId]) : new Set();
     },
   );
   const queryClient = useQueryClient();
@@ -111,7 +109,7 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
     ? [...questionsQuery.data].sort((a, b) =>
         getQuestionTitle(a.prompt).localeCompare(
           getQuestionTitle(b.prompt),
-          'pt-BR',
+          'en',
           { sensitivity: 'base' },
         ),
       )
@@ -123,7 +121,7 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
         }
         return getQuestionTitle(a.prompt).localeCompare(
           getQuestionTitle(b.prompt),
-          'pt-BR',
+          'en',
           { sensitivity: 'base' },
         );
       })
@@ -153,10 +151,10 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
     <section className="flex min-h-0 flex-1 flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="eyebrow">Prática técnica</p>
-          <h1 className="page-title">Perguntas — {company?.name}</h1>
+          <p className="eyebrow">Technical practice</p>
+          <h1 className="page-title">Questions — {company?.name}</h1>
           <p className="mt-2 text-slate-400">
-            Cadastre e revise suas perguntas de entrevista.
+            Create and review your interview questions.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -172,7 +170,7 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
                   )
                 }
               >
-                Expandir todas
+                Expand all
               </button>
               <button
                 className="button-secondary"
@@ -180,7 +178,7 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
                 disabled={!expandedQuestions.size}
                 onClick={() => setExpandedQuestions(new Set())}
               >
-                Colapsar todas
+                Collapse all
               </button>
             </div>
           )}
@@ -191,9 +189,9 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
             >
               <summary
                 className="field flex cursor-pointer list-none items-center justify-between gap-3 overflow-hidden text-ellipsis whitespace-nowrap py-2"
-                aria-label="Selecionar pergunta"
+                aria-label="Select a question"
               >
-                Selecione uma pergunta…
+                Select a question…
                 <svg
                   className="size-4 shrink-0 transition-transform group-open:rotate-180"
                   viewBox="0 0 20 20"
@@ -223,44 +221,43 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
             </details>
           )}
           <Link className="button-primary" to="/questions/new">
-            Nova pergunta
+            New question
           </Link>
         </div>
       </div>
 
       {questionsQuery.isPending && (
-        <p className="panel text-slate-300">Carregando perguntas…</p>
+        <p className="panel text-slate-300">Loading questions…</p>
       )}
       {questionsQuery.isError && (
         <p role="alert" className="panel text-red-200">
-          Não foi possível carregar as perguntas: {questionsQuery.error.message}
+          Failed to load questions: {questionsQuery.error.message}
         </p>
       )}
       {deleteMutation.isError && (
         <p role="alert" className="panel text-red-200">
-          Não foi possível excluir a pergunta: {deleteMutation.error.message}
+          Failed to delete the question: {deleteMutation.error.message}
         </p>
       )}
       {user && user.role !== 'user' && favoriteMutation.isError && (
         <p role="alert" className="panel text-red-200">
-          Não foi possível atualizar os favoritos:{' '}
-          {favoriteMutation.error.message}
+          Failed to update favorites: {favoriteMutation.error.message}
         </p>
       )}
       {user && user.role !== 'user' && questionsQuery.data && (
         <p className="text-sm text-slate-400">
-          Favorites: {favoriteCount}/{MAX_FAVORITE_QUESTIONS} — they stay at the
-          top of the list.
+          Favorites: {favoriteCount}/{MAX_FAVORITE_QUESTIONS} — favorited
+          questions stay at the top of the list.
         </p>
       )}
       {questionsQuery.data?.length === 0 && (
         <div className="panel grid justify-items-start gap-3">
-          <h2 className="text-lg font-semibold">Nenhuma pergunta cadastrada</h2>
+          <h2 className="text-lg font-semibold">No questions yet</h2>
           <p className="text-slate-400">
-            Crie sua primeira pergunta para começar a montar sua coleção.
+            Create your first question to start building your collection.
           </p>
           <Link className="button-secondary" to="/questions/new">
-            Cadastrar pergunta
+            Create question
           </Link>
         </div>
       )}
@@ -276,9 +273,19 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
               key={question.id}
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="min-w-0 flex-1 truncate text-lg font-semibold text-slate-100">
-                  {getQuestionTitle(question.prompt)}
-                </h2>
+                <div className="flex min-w-0 flex-1 flex-wrap items-center justify-start gap-x-3 gap-y-1">
+                  <h2 className="min-w-0 max-w-full truncate text-lg font-semibold text-slate-100">
+                    {getQuestionTitle(question.prompt)}
+                  </h2>
+                  {question.specialties.map((specialty) => (
+                    <span
+                      className="shrink-0 rounded-full border border-sky-400/20 bg-sky-400/10 px-2 py-0.5 text-xs font-medium text-sky-200"
+                      key={specialty.id}
+                    >
+                      {specialty.name}
+                    </span>
+                  ))}
+                </div>
                 <div className="flex flex-wrap gap-2">
                   {user && user.role !== 'user' && (
                     <button
@@ -290,9 +297,7 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
                       type="button"
                       aria-pressed={question.isFavorite}
                       aria-label={
-                        question.isFavorite
-                          ? 'Remove favorite'
-                          : 'Add favorite'
+                        question.isFavorite ? 'Remove favorite' : 'Add favorite'
                       }
                       title={
                         !question.isFavorite &&
@@ -335,9 +340,8 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
                         return next;
                       });
                       if (!isExpanded) {
-                        const questionElement = event.currentTarget.closest(
-                          '[data-question-id]',
-                        );
+                        const questionElement =
+                          event.currentTarget.closest('[data-question-id]');
                         requestAnimationFrame(() => {
                           const list = questionListRef.current;
                           if (!list || !questionElement) return;
@@ -348,9 +352,7 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
                       }
                     }}
                   >
-                    {expandedQuestions.has(question.id)
-                      ? 'Recolher'
-                      : 'Expandir'}
+                    {expandedQuestions.has(question.id) ? 'Collapse' : 'Expand'}
                   </button>
                 </div>
               </div>
@@ -380,7 +382,7 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
                         params={{ questionId: question.id }}
                         onClick={() => rememberQuestionPosition(question.id)}
                       >
-                        Editar
+                        Edit
                       </Link>
                       <button
                         className="button-danger"
@@ -389,14 +391,14 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
                         onClick={() => {
                           if (
                             window.confirm(
-                              `Excluir a pergunta "${getQuestionTitle(question.prompt)}"?`,
+                              `Delete the question "${getQuestionTitle(question.prompt)}"?`,
                             )
                           ) {
                             deleteMutation.mutate(question.id);
                           }
                         }}
                       >
-                        Excluir
+                        Delete
                       </button>
                     </>
                   )}
@@ -411,7 +413,7 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
 }
 
 function getQuestionTitle(prompt: string): string {
-  const title = prompt.split(/\r?\n/, 1)[0]?.trim() || 'Pergunta sem título';
+  const title = prompt.split(/\r?\n/, 1)[0]?.trim() || 'Untitled question';
   return title.length > 80 ? `${title.slice(0, 77).trimEnd()}…` : title;
 }
 
@@ -424,9 +426,7 @@ function renderAnswer(answer: string) {
 
   while ((match = codePattern.exec(answer)) !== null) {
     if (match.index > lastIndex) {
-      parts.push(
-        <span key={key}>{answer.slice(lastIndex, match.index)}</span>,
-      );
+      parts.push(<span key={key}>{answer.slice(lastIndex, match.index)}</span>);
       key += 1;
     }
     const code = match[1] ?? match[2];

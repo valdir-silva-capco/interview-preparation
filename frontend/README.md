@@ -14,6 +14,9 @@ five minutes when changes are present. Root can generate one-time passwords
 for any account; masters can generate one for themselves and linked users. The
 password is displayed once in the user-management screen for copying.
 
+Questions can be assigned one or more technology specialties when created or
+edited. Selected specialties appear as tags beside each question title.
+
 The Company Selection menu includes company management. Root can manage all
 companies; other users can rename or activate/deactivate companies linked to
 their accounts. Deactivated companies are hidden from the selector and their

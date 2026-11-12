@@ -7,7 +7,7 @@ import { Public } from '../auth/auth.decorators.js';
 export class HealthController {
   @Get()
   @Public()
-  @ApiOperation({ summary: 'Verificar a saúde da API' })
+  @ApiOperation({ summary: 'Check API health' })
   @ApiOkResponse({ schema: { example: { status: 'ok' } } })
   check(): { status: 'ok' } {
     return { status: 'ok' };

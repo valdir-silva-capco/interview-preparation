@@ -10,12 +10,12 @@ export function CompanyGate({
   const { company, isPending, error } = useCompanyContext();
 
   if (isPending) {
-    return <p className="panel text-slate-300">Carregando empresas…</p>;
+    return <p className="panel text-slate-300">Loading companies…</p>;
   }
   if (error) {
     return (
       <p role="alert" className="panel text-red-200">
-        Não foi possível carregar as empresas: {error.message}
+        Failed to load companies: {error.message}
       </p>
     );
   }
