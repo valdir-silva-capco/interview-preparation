@@ -13,6 +13,7 @@ import { LoginPage } from './features/auth/LoginPage';
 import { UsersPage } from './features/auth/UsersPage';
 import { SpecialtiesPage } from './features/auth/SpecialtiesPage';
 import { AccountPage } from './features/auth/AccountPage';
+import { ManageCompaniesPage } from './features/companies/ManageCompaniesPage';
 
 const rootRoute = createRootRoute({ component: RootLayout });
 
@@ -41,6 +42,11 @@ const createCompanyRoute = createRoute({
   path: '/companies/new',
   component: CreateCompanyPage,
 });
+const manageCompaniesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/companies/manage',
+  component: ManageCompaniesPage,
+});
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/login',
@@ -68,6 +74,7 @@ const routeTree = rootRoute.addChildren([
   editQuestionRoute,
   codeRoute,
   createCompanyRoute,
+  manageCompaniesRoute,
   loginRoute,
   usersRoute,
   specialtiesRoute,

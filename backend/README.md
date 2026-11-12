@@ -22,6 +22,8 @@ forwarded to a separate local service over a Unix socket.
 - `DELETE /api/v1/specialties/:id`
 - `GET /api/v1/companies`
 - `POST /api/v1/companies`
+- `GET /api/v1/companies/manage`
+- `PATCH /api/v1/companies/:id`
 - `GET /api/v1/companies/:companyId/questions`
 - `GET /api/v1/companies/:companyId/questions/:id`
 - `POST /api/v1/companies/:companyId/questions`
@@ -50,6 +52,12 @@ code snippets. User deletion is logical (deactivation). Root can reset any
 account password; masters can reset their own password and passwords for users
 in their linked companies. The generated password is returned once with
 no-store caching and invalidates the target account's existing sessions.
+
+Root can rename, activate, or deactivate any company. Master and user accounts
+can perform those actions only for companies linked to their account.
+Deactivation preserves company memberships, questions, and code snippets;
+inactive companies are omitted from the company selector and cannot be used
+until reactivated.
 
 Set a unique `AUTH_TOKEN_SECRET` of at least 32 bytes in `backend/.env` before
 starting the stack. Start the API, PostgreSQL, and code runner with

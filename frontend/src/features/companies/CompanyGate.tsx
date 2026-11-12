@@ -22,13 +22,13 @@ export function CompanyGate({
   if (!company) {
     return (
       <div className="panel grid justify-items-start gap-3">
-        <h1 className="text-lg font-semibold">Cadastre uma empresa</h1>
+        <h1 className="text-lg font-semibold">No active companies</h1>
         <p className="text-slate-400">
-          Cadastre ou selecione uma empresa para organizar suas perguntas e
-          códigos.
+          Manage your linked companies to reactivate one and continue working
+          with its questions and code snippets.
         </p>
-        <Link className="button-primary" to="/companies/new">
-          Cadastrar empresa
+        <Link className="button-primary" to="/companies/manage">
+          Manage Companies
         </Link>
       </div>
     );

@@ -12,6 +12,12 @@ manage companies, master accounts, and technology specialties. Masters manage
 user accounts within their linked companies. Users can read company content
 and manage their own questions and code snippets.
 
+Open **Manage Companies** from the **Company Selection** menu to rename or
+activate/deactivate companies. Root can manage all companies; other roles can
+manage companies linked to their accounts. Deactivation preserves company
+data and memberships, removes the company from the selector, and can be
+reversed from the management screen.
+
 ## Run locally with Docker Compose
 
 Start the API, database, and code runner:

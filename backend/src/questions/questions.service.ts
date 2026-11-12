@@ -33,6 +33,7 @@ export class QuestionsService {
   }
 
   async findOne(companyId: string, id: string): Promise<Question> {
+    await this.companiesService.findOne(companyId);
     const question = await this.questionsRepository.findOneBy({
       id,
       companyId,
@@ -86,6 +87,7 @@ export class QuestionsService {
         .createQueryBuilder('company')
         .setLock('pessimistic_write')
         .where('company.id = :companyId', { companyId })
+        .andWhere('company."isActive" = true')
         .getOne();
       if (!company) {
         throw new NotFoundException('Empresa não encontrada.');

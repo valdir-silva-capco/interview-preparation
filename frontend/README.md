@@ -14,6 +14,11 @@ five minutes when changes are present. Root can generate one-time passwords
 for any account; masters can generate one for themselves and linked users. The
 password is displayed once in the user-management screen for copying.
 
+The Company Selection menu includes company management. Root can manage all
+companies; other users can rename or activate/deactivate companies linked to
+their accounts. Deactivated companies are hidden from the selector and their
+content is preserved.
+
 Run `docker compose up --build` to start the container at
 <http://localhost:5173>. Configure `VITE_API_URL` if the API is not available
 at `http://localhost:3000/api/v1`.

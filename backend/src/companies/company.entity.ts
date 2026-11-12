@@ -17,6 +17,10 @@ export class Company {
   @Column({ type: 'varchar', length: 120 })
   name!: string;
 
+  @ApiProperty({ default: true })
+  @Column({ type: 'boolean', default: true })
+  isActive!: boolean;
+
   @ApiProperty({ type: String, format: 'date-time' })
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;

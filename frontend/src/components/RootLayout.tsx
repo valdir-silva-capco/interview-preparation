@@ -37,6 +37,7 @@ export function RootLayout() {
     companiesQuery.data?.find(({ id }) => id === selectedCompanyId) ??
     companiesQuery.data?.[0] ??
     null;
+  const activeCompanies = companiesQuery.data ?? [];
 
   useEffect(() => {
     if (!user && !isLoginPage) {
@@ -110,7 +111,7 @@ export function RootLayout() {
               aria-label="Main navigation"
               className="flex flex-wrap items-center gap-3"
             >
-              {user && companiesQuery.data && companiesQuery.data.length > 0 && (
+              {user && (
                 <details
                   className="relative"
                   ref={companyMenuRef}
@@ -133,20 +134,26 @@ export function RootLayout() {
                     aria-label="Companies"
                   >
                     {user.role === 'root' && (
-                      <>
-                        <Link
-                          className="nav-link w-full justify-start"
-                          to="/companies/new"
-                        >
-                          + New Company
-                        </Link>
-                        <div
-                          aria-hidden="true"
-                          className="my-1 border-t border-slate-700"
-                        />
-                      </>
+                      <Link
+                        className="nav-link w-full justify-start"
+                        to="/companies/new"
+                      >
+                        + New Company
+                      </Link>
                     )}
-                    {companiesQuery.data.map((item) => (
+                    <Link
+                      className="nav-link w-full justify-start"
+                      to="/companies/manage"
+                    >
+                      Manage Companies
+                    </Link>
+                    {activeCompanies.length > 0 && (
+                      <div
+                        aria-hidden="true"
+                        className="my-1 border-t border-slate-700"
+                      />
+                    )}
+                    {activeCompanies.map((item) => (
                       <button
                         key={item.id}
                         className={`nav-link w-full justify-start ${
