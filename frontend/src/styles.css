@@ -137,6 +137,18 @@ select {
   color: white;
 }
 
+.app-header .nav-link,
+.app-header .button-secondary {
+  min-height: 1.875rem;
+  border-radius: 0.525rem;
+  padding: 0.4125rem 0.675rem;
+  font-size: 0.65625rem;
+}
+
+.app-header .brand-link {
+  font-size: 0.75rem;
+}
+
 .button-danger {
   border: 1px solid rgb(248 113 113 / 35%);
   background: rgb(127 29 29 / 25%);

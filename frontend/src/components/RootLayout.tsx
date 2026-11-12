@@ -102,14 +102,14 @@ export function RootLayout() {
       }}
     >
       <div className="flex h-dvh flex-col overflow-hidden">
-        <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-800 bg-slate-950/95 backdrop-blur">
+        <header className="app-header fixed inset-x-0 top-0 z-50 border-b border-slate-800 bg-slate-950/95 backdrop-blur">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-4">
-            <Link className="font-semibold tracking-tight text-white" to="/">
+            <Link className="brand-link font-semibold tracking-tight text-white" to="/">
               Interview Preparation
             </Link>
             <nav
               aria-label="Main navigation"
-              className="flex flex-wrap items-center gap-3"
+              className="flex flex-wrap items-center gap-2"
             >
               {user && (
                 <details
