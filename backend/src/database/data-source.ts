@@ -13,6 +13,7 @@ import { AddAuthenticationAndOwnership1760000002000 } from './migrations/1760000
 import { AddCompanyActivation1760000003000 } from './migrations/1760000003000-AddCompanyActivation.js';
 import { TranslateDefaultCompanyName1760000004000 } from './migrations/1760000004000-TranslateDefaultCompanyName.js';
 import { AddQuestionSpecialties1760000005000 } from './migrations/1760000005000-AddQuestionSpecialties.js';
+import { ProtectLinkedSpecialties1760000006000 } from './migrations/1760000006000-ProtectLinkedSpecialties.js';
 
 export default new DataSource({
   type: 'postgres',
@@ -30,6 +31,7 @@ export default new DataSource({
     AddCompanyActivation1760000003000,
     TranslateDefaultCompanyName1760000004000,
     AddQuestionSpecialties1760000005000,
+    ProtectLinkedSpecialties1760000006000,
   ],
   synchronize: false,
 });
