@@ -237,7 +237,7 @@ export function RootLayout() {
           </div>
         </header>
         <main
-          className={`mx-auto flex w-full max-w-6xl min-h-0 flex-1 flex-col px-5 pb-4 pt-32 md:pt-24 ${
+          className={`app-content mx-auto flex w-full max-w-6xl min-h-0 flex-1 flex-col px-5 pb-4 pt-32 md:pt-24 ${
             isQuestionsPage ? 'overflow-hidden' : 'overflow-y-auto'
           }`}
         >
