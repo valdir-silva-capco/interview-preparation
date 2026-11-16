@@ -55,6 +55,9 @@ export class QuestionsService {
     actor: AuthenticatedUser,
   ): Promise<Question> {
     await this.companiesService.findOne(companyId);
+    if (!dto.prompt.trim()) {
+      throw new BadRequestException('The question prompt is required.');
+    }
     const question = this.questionsRepository.create({
       companyId,
       createdById: actor.id,
@@ -73,9 +76,11 @@ export class QuestionsService {
   ): Promise<Question> {
     const question = await this.findOne(companyId, id);
     this.assertCanEdit(actor, question.createdById);
-    if (dto.prompt !== undefined) {
-      question.prompt = dto.prompt.trim();
+    const prompt = dto.prompt?.trim() ?? question.prompt;
+    if (!prompt) {
+      throw new BadRequestException('The question prompt is required.');
     }
+    question.prompt = prompt;
     if (dto.answer !== undefined) {
       question.answer = dto.answer?.trim() || null;
     }

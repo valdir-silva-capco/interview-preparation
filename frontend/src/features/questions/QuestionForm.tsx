@@ -208,12 +208,17 @@ export function QuestionForm({
       <label className="grid gap-2 text-sm font-medium text-slate-200">
         Answer or explanation <span className="text-slate-500">(optional)</span>
         <textarea
+          disabled={!prompt.trim()}
           maxLength={20_000}
           rows={5}
           value={answer}
           onChange={handleAnswerChange}
           onKeyDown={(event) => handleListKeyDown(event, setAnswer)}
-          placeholder="Add an answer or explanation, if desired"
+          placeholder={
+            prompt.trim()
+              ? 'Add an answer or explanation, if desired'
+              : 'Enter a question prompt first'
+          }
           className="field min-h-32 resize-y"
         />
       </label>
