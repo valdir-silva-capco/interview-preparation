@@ -11,6 +11,7 @@ import {
   setQuestionFavorite,
   storeExpandedQuestionIds,
 } from './questions-api';
+import { downloadQuestionsPdf } from './questions-pdf';
 import { CompanyGate } from '../companies/CompanyGate';
 import { useCompanyContext } from '../companies/CompanyContext';
 import { useAuthStore } from '../auth/auth-store';
@@ -34,6 +35,8 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
   const questionPickerRef = useRef<HTMLDetailsElement>(null);
   const questionToScrollRef = useRef<string | null>(null);
   const draggedFavoriteIdRef = useRef<string | null>(null);
+  const [exportError, setExportError] = useState('');
+  const [isExporting, setIsExporting] = useState(false);
   const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(
     () => {
       const storedExpandedQuestions = readExpandedQuestionIds(companyId);
@@ -117,6 +120,21 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
     setExpandedQuestions((current) => new Set(current).add(questionId));
   }
 
+  async function handleExportPdf() {
+    if (!questionsQuery.data?.length) return;
+    setIsExporting(true);
+    try {
+      await downloadQuestionsPdf(company?.name ?? 'Company', orderedQuestions);
+      setExportError('');
+    } catch (error) {
+      setExportError(
+        error instanceof Error ? error.message : 'Failed to generate the PDF.',
+      );
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
   const alphabetizedQuestions = questionsQuery.data
     ? [...questionsQuery.data].sort((a, b) =>
         getQuestionTitle(a.prompt).localeCompare(
@@ -184,6 +202,16 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          {questionsQuery.data && questionsQuery.data.length > 0 && (
+            <button
+              className="button-secondary"
+              type="button"
+              disabled={isExporting}
+              onClick={handleExportPdf}
+            >
+              {isExporting ? 'Generating PDF…' : 'Download PDF'}
+            </button>
+          )}
           {orderedQuestions.length > 0 && (
             <div className="flex gap-2">
               <button
@@ -258,6 +286,11 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
       {questionsQuery.isError && (
         <p role="alert" className="panel text-red-200">
           Failed to load questions: {questionsQuery.error.message}
+        </p>
+      )}
+      {exportError && (
+        <p role="alert" className="panel text-red-200">
+          Failed to generate the PDF: {exportError}
         </p>
       )}
       {deleteMutation.isError && (

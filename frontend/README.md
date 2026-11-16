@@ -16,6 +16,7 @@ password is displayed once in the user-management screen for copying.
 
 Questions can be assigned one or more technology specialties when created or
 edited. Selected specialties appear as tags beside each question title.
+The question list can be downloaded as a PDF in its current display order.
 Root and master users can mark up to twelve questions per company as favorites
 and drag them into the desired order.
 
