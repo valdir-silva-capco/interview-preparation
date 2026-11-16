@@ -16,6 +16,8 @@ password is displayed once in the user-management screen for copying.
 
 Questions can be assigned one or more technology specialties when created or
 edited. Selected specialties appear as tags beside each question title.
+Root and master users can mark up to twelve questions per company as favorites
+and drag them into the desired order.
 
 The Company Selection menu includes company management. Root can manage all
 companies; other users can rename or activate/deactivate companies linked to

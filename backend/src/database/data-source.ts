@@ -14,6 +14,7 @@ import { AddCompanyActivation1760000003000 } from './migrations/1760000003000-Ad
 import { TranslateDefaultCompanyName1760000004000 } from './migrations/1760000004000-TranslateDefaultCompanyName.js';
 import { AddQuestionSpecialties1760000005000 } from './migrations/1760000005000-AddQuestionSpecialties.js';
 import { ProtectLinkedSpecialties1760000006000 } from './migrations/1760000006000-ProtectLinkedSpecialties.js';
+import { AddFavoriteQuestionOrder1760000007000 } from './migrations/1760000007000-AddFavoriteQuestionOrder.js';
 
 export default new DataSource({
   type: 'postgres',
@@ -32,6 +33,7 @@ export default new DataSource({
     TranslateDefaultCompanyName1760000004000,
     AddQuestionSpecialties1760000005000,
     ProtectLinkedSpecialties1760000006000,
+    AddFavoriteQuestionOrder1760000007000,
   ],
   synchronize: false,
 });

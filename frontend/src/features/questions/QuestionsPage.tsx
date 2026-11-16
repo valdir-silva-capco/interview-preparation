@@ -7,6 +7,7 @@ import {
   lastEditedQuestionStorageKey,
   questionKeys,
   readExpandedQuestionIds,
+  reorderFavoriteQuestions,
   setQuestionFavorite,
   storeExpandedQuestionIds,
 } from './questions-api';
@@ -14,7 +15,7 @@ import { CompanyGate } from '../companies/CompanyGate';
 import { useCompanyContext } from '../companies/CompanyContext';
 import { useAuthStore } from '../auth/auth-store';
 
-const MAX_FAVORITE_QUESTIONS = 10;
+const MAX_FAVORITE_QUESTIONS = 12;
 
 export function QuestionsPage() {
   return (
@@ -32,6 +33,7 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
   const questionListRef = useRef<HTMLUListElement>(null);
   const questionPickerRef = useRef<HTMLDetailsElement>(null);
   const questionToScrollRef = useRef<string | null>(null);
+  const draggedFavoriteIdRef = useRef<string | null>(null);
   const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(
     () => {
       const storedExpandedQuestions = readExpandedQuestionIds(companyId);
@@ -129,6 +131,12 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
         if (a.isFavorite !== b.isFavorite) {
           return a.isFavorite ? -1 : 1;
         }
+        if (a.isFavorite && b.isFavorite) {
+          return (
+            (a.favoriteOrder ?? Number.MAX_SAFE_INTEGER) -
+            (b.favoriteOrder ?? Number.MAX_SAFE_INTEGER)
+          );
+        }
         return getQuestionTitle(a.prompt).localeCompare(
           getQuestionTitle(b.prompt),
           'en',
@@ -144,6 +152,14 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
   const favoriteMutation = useMutation({
     mutationFn: ({ id, isFavorite }: { id: string; isFavorite: boolean }) =>
       setQuestionFavorite(companyId, id, isFavorite),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: questionKeys.all(companyId),
+      }),
+  });
+  const reorderFavoritesMutation = useMutation({
+    mutationFn: (questionIds: string[]) =>
+      reorderFavoriteQuestions(companyId, questionIds),
     onSuccess: () =>
       queryClient.invalidateQueries({
         queryKey: questionKeys.all(companyId),
@@ -254,10 +270,15 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
           Failed to update favorites: {favoriteMutation.error.message}
         </p>
       )}
+      {user && user.role !== 'user' && reorderFavoritesMutation.isError && (
+        <p role="alert" className="panel text-red-200">
+          Failed to reorder favorites: {reorderFavoritesMutation.error.message}
+        </p>
+      )}
       {user && user.role !== 'user' && questionsQuery.data && (
         <p className="text-sm text-slate-400">
           Favorites: {favoriteCount}/{MAX_FAVORITE_QUESTIONS} — favorited
-          questions stay at the top of the list.
+          questions stay at the top of the list. Drag favorites to reorder them.
         </p>
       )}
       {questionsQuery.data?.length === 0 && (
@@ -281,6 +302,45 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
               className="panel grid gap-4"
               data-question-id={question.id}
               key={question.id}
+              onDragOver={(event) => {
+                if (
+                  !question.isFavorite ||
+                  !draggedFavoriteIdRef.current ||
+                  draggedFavoriteIdRef.current === question.id
+                ) {
+                  return;
+                }
+                event.preventDefault();
+                event.dataTransfer.dropEffect = 'move';
+              }}
+              onDrop={(event) => {
+                event.preventDefault();
+                const draggedId = draggedFavoriteIdRef.current;
+                draggedFavoriteIdRef.current = null;
+                if (
+                  !question.isFavorite ||
+                  !draggedId ||
+                  draggedId === question.id
+                ) {
+                  return;
+                }
+                const targetBounds =
+                  event.currentTarget.getBoundingClientRect();
+                const dropAfter =
+                  event.clientY > targetBounds.top + targetBounds.height / 2;
+                const favoriteIds = orderedQuestions
+                  .filter((item) => item.isFavorite)
+                  .map((item) => item.id);
+                const fromIndex = favoriteIds.indexOf(draggedId);
+                const toIndex = favoriteIds.indexOf(question.id);
+                if (fromIndex === -1 || toIndex === -1) return;
+                favoriteIds.splice(fromIndex, 1);
+                let insertionIndex = toIndex;
+                if (fromIndex < toIndex) insertionIndex -= 1;
+                if (dropAfter) insertionIndex += 1;
+                favoriteIds.splice(insertionIndex, 0, draggedId);
+                reorderFavoritesMutation.mutate(favoriteIds);
+              }}
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex min-w-0 flex-1 flex-wrap items-center justify-start gap-x-3 gap-y-1">
@@ -298,40 +358,93 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {user && user.role !== 'user' && (
-                    <button
-                      className={
-                        question.isFavorite
-                          ? 'button-secondary border-amber-400/50 text-amber-200'
-                          : 'button-secondary'
-                      }
-                      type="button"
-                      aria-pressed={question.isFavorite}
-                      aria-label={
-                        question.isFavorite ? 'Remove favorite' : 'Add favorite'
-                      }
-                      title={
-                        !question.isFavorite &&
-                        favoriteCount >= MAX_FAVORITE_QUESTIONS
-                          ? `The ${MAX_FAVORITE_QUESTIONS}-favorite limit has been reached`
-                          : undefined
-                      }
-                      disabled={
-                        favoriteMutation.isPending ||
-                        (!question.isFavorite &&
-                          favoriteCount >= MAX_FAVORITE_QUESTIONS)
-                      }
-                      onClick={() =>
-                        favoriteMutation.mutate({
-                          id: question.id,
-                          isFavorite: !question.isFavorite,
-                        })
-                      }
-                    >
-                      <span aria-hidden="true">
-                        {question.isFavorite ? '★' : '☆'}
-                      </span>
-                      {question.isFavorite ? 'Favorite' : 'Add favorite'}
-                    </button>
+                    <>
+                      {question.isFavorite && favoriteCount > 1 && (
+                        <button
+                          className="button-secondary cursor-grab active:cursor-grabbing"
+                          type="button"
+                          draggable={!reorderFavoritesMutation.isPending}
+                          aria-label={`Drag to reorder favorite: ${getQuestionTitle(question.prompt)}`}
+                          title="Drag or use the arrow keys to reorder favorites"
+                          disabled={reorderFavoritesMutation.isPending}
+                          onDragStart={(event) => {
+                            draggedFavoriteIdRef.current = question.id;
+                            event.dataTransfer.effectAllowed = 'move';
+                            event.dataTransfer.setData(
+                              'text/plain',
+                              question.id,
+                            );
+                          }}
+                          onDragEnd={() => {
+                            draggedFavoriteIdRef.current = null;
+                          }}
+                          onKeyDown={(event) => {
+                            if (
+                              event.key !== 'ArrowUp' &&
+                              event.key !== 'ArrowDown'
+                            ) {
+                              return;
+                            }
+                            event.preventDefault();
+                            const favoriteIds = orderedQuestions
+                              .filter((item) => item.isFavorite)
+                              .map((item) => item.id);
+                            const index = favoriteIds.indexOf(question.id);
+                            const targetIndex =
+                              index + (event.key === 'ArrowUp' ? -1 : 1);
+                            if (
+                              targetIndex < 0 ||
+                              targetIndex >= favoriteIds.length
+                            ) {
+                              return;
+                            }
+                            [favoriteIds[index], favoriteIds[targetIndex]] = [
+                              favoriteIds[targetIndex],
+                              favoriteIds[index],
+                            ];
+                            reorderFavoritesMutation.mutate(favoriteIds);
+                          }}
+                        >
+                          <span aria-hidden="true">⠿</span>
+                        </button>
+                      )}
+                      <button
+                        className={
+                          question.isFavorite
+                            ? 'button-secondary border-amber-400/50 text-amber-200'
+                            : 'button-secondary'
+                        }
+                        type="button"
+                        aria-pressed={question.isFavorite}
+                        aria-label={
+                          question.isFavorite
+                            ? 'Remove favorite'
+                            : 'Add favorite'
+                        }
+                        title={
+                          !question.isFavorite &&
+                          favoriteCount >= MAX_FAVORITE_QUESTIONS
+                            ? `The ${MAX_FAVORITE_QUESTIONS}-favorite limit has been reached`
+                            : undefined
+                        }
+                        disabled={
+                          favoriteMutation.isPending ||
+                          (!question.isFavorite &&
+                            favoriteCount >= MAX_FAVORITE_QUESTIONS)
+                        }
+                        onClick={() =>
+                          favoriteMutation.mutate({
+                            id: question.id,
+                            isFavorite: !question.isFavorite,
+                          })
+                        }
+                      >
+                        <span aria-hidden="true">
+                          {question.isFavorite ? '★' : '☆'}
+                        </span>
+                        {question.isFavorite ? 'Favorite' : 'Add favorite'}
+                      </button>
+                    </>
                   )}
                   <button
                     className="button-secondary"

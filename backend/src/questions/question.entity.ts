@@ -32,6 +32,10 @@ export class Question {
   @Column({ type: 'boolean', default: false })
   isFavorite!: boolean;
 
+  @ApiPropertyOptional({ nullable: true })
+  @Column({ type: 'integer', nullable: true })
+  favoriteOrder!: number | null;
+
   @ApiPropertyOptional({ maxLength: 20_000, nullable: true })
   @Column({ type: 'text', nullable: true })
   answer!: string | null;

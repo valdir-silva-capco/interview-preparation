@@ -29,6 +29,7 @@ forwarded to a separate local service over a Unix socket.
 - `POST /api/v1/companies/:companyId/questions`
 - `PATCH /api/v1/companies/:companyId/questions/:id`
 - `PATCH /api/v1/companies/:companyId/questions/:id/favorite`
+- `PATCH /api/v1/companies/:companyId/questions/favorites/order`
 - `DELETE /api/v1/companies/:companyId/questions/:id`
 - `GET /api/v1/companies/:companyId/code-snippets`
 - `POST /api/v1/companies/:companyId/code-snippets`
@@ -41,8 +42,10 @@ Questions require `prompt`, may include an `answer`, and may include
 `specialtyIds`, an array of technology specialty UUIDs. Saved code snippets
 include a title, language (`python` or `node`), and source code. Execution
 returns stdout, stderr, and the exit code, but does not store execution history.
-Each company can have up to ten favorite questions, which are returned before
-the others. The migration assigns existing questions to the default company;
+Each company can have up to twelve favorite questions, which are returned before
+the others in a user-defined order. Root and master users can reorder favorites
+by sending all favorite question IDs in the desired order. The migration assigns
+existing questions to the default company;
 code snippets that previously existed only in memory cannot be recovered.
 
 All endpoints except health and login require a bearer token. Tokens expire

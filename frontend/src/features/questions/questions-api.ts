@@ -6,6 +6,7 @@ export interface Question {
   answer: string | null;
   specialties: Array<{ id: string; name: string }>;
   isFavorite: boolean;
+  favoriteOrder: number | null;
   createdById: string | null;
   createdAt: string;
   updatedAt: string;
@@ -92,6 +93,16 @@ export function setQuestionFavorite(
   return apiRequest<Question>(`${questionsPath(companyId)}/${id}/favorite`, {
     method: 'PATCH',
     body: JSON.stringify({ isFavorite }),
+  });
+}
+
+export function reorderFavoriteQuestions(
+  companyId: string,
+  questionIds: string[],
+): Promise<Question[]> {
+  return apiRequest<Question[]>(`${questionsPath(companyId)}/favorites/order`, {
+    method: 'PATCH',
+    body: JSON.stringify({ questionIds }),
   });
 }
 

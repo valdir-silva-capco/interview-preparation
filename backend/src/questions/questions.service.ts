@@ -15,7 +15,7 @@ import { Question } from './question.entity.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { TechnologySpecialty } from '../specialties/technology-specialty.entity.js';
 
-const MAX_FAVORITE_QUESTIONS = 10;
+const MAX_FAVORITE_QUESTIONS = 12;
 
 @Injectable()
 export class QuestionsService {
@@ -32,7 +32,7 @@ export class QuestionsService {
     await this.companiesService.findOne(companyId);
     return this.questionsRepository.find({
       where: { companyId },
-      order: { isFavorite: 'DESC', updatedAt: 'DESC' },
+      order: { isFavorite: 'DESC', favoriteOrder: 'ASC', updatedAt: 'DESC' },
       relations: { specialties: true },
     });
   }
@@ -112,6 +112,11 @@ export class QuestionsService {
       }
 
       if (dto.isFavorite && !question.isFavorite) {
+        const favorites = await questions.find({
+          where: { companyId, isFavorite: true },
+          order: { favoriteOrder: 'DESC' },
+          take: 1,
+        });
         const favoriteCount = await questions.countBy({
           companyId,
           isFavorite: true,
@@ -121,10 +126,57 @@ export class QuestionsService {
             `You can favorite up to ${MAX_FAVORITE_QUESTIONS} questions per company.`,
           );
         }
+        question.favoriteOrder = (favorites[0]?.favoriteOrder ?? -1) + 1;
+      } else if (!dto.isFavorite) {
+        question.favoriteOrder = null;
       }
 
       question.isFavorite = dto.isFavorite;
       return questions.save(question);
+    });
+  }
+
+  async reorderFavorites(
+    companyId: string,
+    questionIds: string[],
+  ): Promise<Question[]> {
+    return this.dataSource.transaction(async (manager) => {
+      const company = await manager
+        .getRepository(Company)
+        .createQueryBuilder('company')
+        .setLock('pessimistic_write')
+        .where('company.id = :companyId', { companyId })
+        .andWhere('company."isActive" = true')
+        .getOne();
+      if (!company) {
+        throw new NotFoundException('Company not found.');
+      }
+
+      const questions = manager.getRepository(Question);
+      const favorites = await questions.find({
+        where: { companyId, isFavorite: true },
+        order: { favoriteOrder: 'ASC', updatedAt: 'DESC' },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (
+        questionIds.length !== favorites.length ||
+        new Set(questionIds).size !== questionIds.length ||
+        favorites.some((question) => !questionIds.includes(question.id))
+      ) {
+        throw new BadRequestException(
+          'The order must include every favorite question exactly once.',
+        );
+      }
+
+      const favoritesById = new Map(
+        favorites.map((question) => [question.id, question]),
+      );
+      const reordered = questionIds.map((id, index) => {
+        const question = favoritesById.get(id)!;
+        question.favoriteOrder = index;
+        return question;
+      });
+      return questions.save(reordered);
     });
   }
 

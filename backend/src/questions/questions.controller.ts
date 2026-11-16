@@ -21,6 +21,7 @@ import {
 import { CreateQuestionDto } from './dto/create-question.dto.js';
 import { SetQuestionFavoriteDto } from './dto/set-question-favorite.dto.js';
 import { UpdateQuestionDto } from './dto/update-question.dto.js';
+import { ReorderFavoriteQuestionsDto } from './dto/reorder-favorite-questions.dto.js';
 import { Question } from './question.entity.js';
 import { QuestionsService } from './questions.service.js';
 import type { Request } from 'express';
@@ -83,6 +84,17 @@ export class QuestionsController {
     @Body() dto: SetQuestionFavoriteDto,
   ): Promise<Question> {
     return this.questionsService.setFavorite(companyId, id, dto);
+  }
+
+  @Patch('favorites/order')
+  @Roles('root', 'master')
+  @ApiOperation({ summary: 'Reorder favorite questions' })
+  @ApiOkResponse({ type: Question, isArray: true })
+  reorderFavorites(
+    @Param('companyId', ParseUUIDPipe) companyId: string,
+    @Body() dto: ReorderFavoriteQuestionsDto,
+  ): Promise<Question[]> {
+    return this.questionsService.reorderFavorites(companyId, dto.questionIds);
   }
 
   @Delete(':id')
