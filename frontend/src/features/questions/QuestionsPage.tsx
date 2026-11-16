@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import {
@@ -6,7 +6,9 @@ import {
   getQuestions,
   lastEditedQuestionStorageKey,
   questionKeys,
+  readExpandedQuestionIds,
   setQuestionFavorite,
+  storeExpandedQuestionIds,
 } from './questions-api';
 import { CompanyGate } from '../companies/CompanyGate';
 import { useCompanyContext } from '../companies/CompanyContext';
@@ -17,7 +19,9 @@ const MAX_FAVORITE_QUESTIONS = 10;
 export function QuestionsPage() {
   return (
     <CompanyGate>
-      {(companyId) => <CompanyQuestionsPage companyId={companyId} />}
+      {(companyId) => (
+        <CompanyQuestionsPage key={companyId} companyId={companyId} />
+      )}
     </CompanyGate>
   );
 }
@@ -30,12 +34,18 @@ function CompanyQuestionsPage({ companyId }: { companyId: string }) {
   const questionToScrollRef = useRef<string | null>(null);
   const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(
     () => {
+      const storedExpandedQuestions = readExpandedQuestionIds(companyId);
+      if (storedExpandedQuestions !== null) return storedExpandedQuestions;
+
       const lastEditedQuestionId = sessionStorage.getItem(
         lastEditedQuestionStorageKey(companyId),
       );
       return lastEditedQuestionId ? new Set([lastEditedQuestionId]) : new Set();
     },
   );
+  useEffect(() => {
+    storeExpandedQuestionIds(companyId, expandedQuestions);
+  }, [companyId, expandedQuestions]);
   const queryClient = useQueryClient();
   const questionsQuery = useQuery({
     queryKey: questionKeys.all(companyId),

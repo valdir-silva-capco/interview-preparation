@@ -26,6 +26,32 @@ export const questionKeys = {
 export const lastEditedQuestionStorageKey = (companyId: string) =>
   `companies.${companyId}.last-edited-question`;
 
+export const expandedQuestionsStorageKey = (companyId: string) =>
+  `companies.${companyId}.expanded-questions`;
+
+export function readExpandedQuestionIds(companyId: string): Set<string> | null {
+  const stored = sessionStorage.getItem(expandedQuestionsStorageKey(companyId));
+  if (stored === null) return null;
+  try {
+    const ids: unknown = JSON.parse(stored);
+    return Array.isArray(ids) && ids.every((id) => typeof id === 'string')
+      ? new Set(ids)
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+export function storeExpandedQuestionIds(
+  companyId: string,
+  ids: Iterable<string>,
+): void {
+  sessionStorage.setItem(
+    expandedQuestionsStorageKey(companyId),
+    JSON.stringify([...ids]),
+  );
+}
+
 const questionsPath = (companyId: string) =>
   `/companies/${companyId}/questions`;
 

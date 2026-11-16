@@ -5,6 +5,8 @@ import {
   getQuestion,
   lastEditedQuestionStorageKey,
   questionKeys,
+  readExpandedQuestionIds,
+  storeExpandedQuestionIds,
   updateQuestion,
   type SaveQuestionInput,
 } from './questions-api';
@@ -44,6 +46,9 @@ function EditQuestionForm({
         questionKeys.detail(companyId, questionId),
         question,
       );
+      const expandedQuestions = readExpandedQuestionIds(companyId) ?? new Set();
+      expandedQuestions.add(question.id);
+      storeExpandedQuestionIds(companyId, expandedQuestions);
       sessionStorage.setItem(
         lastEditedQuestionStorageKey(companyId),
         question.id,
