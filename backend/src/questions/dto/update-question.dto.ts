@@ -19,13 +19,13 @@ export class UpdateQuestionDto {
   @MaxLength(10_000)
   prompt?: string;
 
-  @ApiPropertyOptional({ maxLength: 20_000, nullable: true })
-  @ValidateIf(
-    (_object, value: unknown) => value !== undefined && value !== null,
-  )
+  @ApiPropertyOptional({ maxLength: 20_000 })
+  @ValidateIf((_object, value: unknown) => value !== undefined)
   @IsString()
+  @MinLength(1)
+  @Matches(/\S/)
   @MaxLength(20_000)
-  answer?: string | null;
+  answer?: string;
 
   @ApiPropertyOptional({ type: [String], format: 'uuid' })
   @ValidateIf((_object, value: unknown) => value !== undefined)

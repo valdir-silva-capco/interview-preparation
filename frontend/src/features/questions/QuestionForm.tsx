@@ -97,10 +97,14 @@ export function QuestionForm({
       setValidationError('The question prompt is required.');
       return;
     }
+    if (!answer.trim()) {
+      setValidationError('The question answer is required.');
+      return;
+    }
     setValidationError('');
     onSubmit({
       prompt: prompt.trim(),
-      answer: answer.trim() || null,
+      answer: answer.trim(),
       specialtyIds,
     });
   }
@@ -206,8 +210,9 @@ export function QuestionForm({
       </fieldset>
 
       <label className="grid gap-2 text-sm font-medium text-slate-200">
-        Answer or explanation <span className="text-slate-500">(optional)</span>
+        Answer or explanation
         <textarea
+          required
           disabled={!prompt.trim()}
           maxLength={20_000}
           rows={5}
@@ -216,7 +221,7 @@ export function QuestionForm({
           onKeyDown={(event) => handleListKeyDown(event, setAnswer)}
           placeholder={
             prompt.trim()
-              ? 'Add an answer or explanation, if desired'
+              ? 'Add an answer or explanation'
               : 'Enter a question prompt first'
           }
           className="field min-h-32 resize-y"

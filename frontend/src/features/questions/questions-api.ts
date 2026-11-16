@@ -14,7 +14,7 @@ export interface Question {
 
 export interface SaveQuestionInput {
   prompt: string;
-  answer: string | null;
+  answer: string;
   specialtyIds: string[];
 }
 

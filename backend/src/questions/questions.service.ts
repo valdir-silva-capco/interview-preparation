@@ -58,11 +58,15 @@ export class QuestionsService {
     if (!dto.prompt.trim()) {
       throw new BadRequestException('The question prompt is required.');
     }
+    const answer = dto.answer.trim();
+    if (!answer) {
+      throw new BadRequestException('The question answer is required.');
+    }
     const question = this.questionsRepository.create({
       companyId,
       createdById: actor.id,
       prompt: dto.prompt.trim(),
-      answer: dto.answer?.trim() || null,
+      answer,
       specialties: await this.resolveSpecialties(dto.specialtyIds ?? []),
     });
     return this.questionsRepository.save(question);
@@ -81,9 +85,11 @@ export class QuestionsService {
       throw new BadRequestException('The question prompt is required.');
     }
     question.prompt = prompt;
-    if (dto.answer !== undefined) {
-      question.answer = dto.answer?.trim() || null;
+    const answer = dto.answer?.trim() ?? question.answer?.trim() ?? '';
+    if (!answer) {
+      throw new BadRequestException('The question answer is required.');
     }
+    question.answer = answer;
     if (dto.specialtyIds !== undefined) {
       question.specialties = await this.resolveSpecialties(dto.specialtyIds);
     }

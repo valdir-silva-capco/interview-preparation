@@ -3,7 +3,6 @@ import {
   ArrayUnique,
   IsArray,
   IsNotEmpty,
-  IsOptional,
   IsString,
   IsUUID,
   Matches,
@@ -19,11 +18,12 @@ export class CreateQuestionDto {
   @MaxLength(10_000)
   prompt!: string;
 
-  @ApiPropertyOptional({ maxLength: 20_000, nullable: true })
-  @IsOptional()
+  @ApiProperty({ maxLength: 20_000 })
   @IsString()
+  @IsNotEmpty()
+  @Matches(/\S/)
   @MaxLength(20_000)
-  answer?: string | null;
+  answer!: string;
 
   @ApiPropertyOptional({ type: [String], format: 'uuid' })
   @ValidateIf((_object, value: unknown) => value !== undefined)

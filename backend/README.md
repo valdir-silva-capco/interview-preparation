@@ -38,7 +38,7 @@ forwarded to a separate local service over a Unix socket.
 - `POST /api/v1/companies/:companyId/code/run`
 - OpenAPI interface: `/api/docs`
 
-Questions require `prompt`, may include an `answer`, and may include
+Questions require a non-empty `prompt` and `answer`, and may include
 `specialtyIds`, an array of technology specialty UUIDs. Saved code snippets
 include a title, language (`python` or `node`), and source code. Execution
 returns stdout, stderr, and the exit code, but does not store execution history.
